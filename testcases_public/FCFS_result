@@ -1,0 +1,28 @@
+Shell version 1.1 Created January 2022
+COMMAND                 DESCRIPTION
+ help                   Displays all the commands
+ quit                   Exits / terminates the shell with “Bye!”
+ set VAR STRING         Assigns a value to shell memory
+ print VAR              Displays the STRING assigned to VAR
+ run SCRIPT.TXT         Executes the file SCRIPT.TXT
+ 
+$ P1L1
+P1L2
+P1L3
+P1L4
+P1L5
+P1L6
+OOP2L1OO
+OOP2L2OO
+OOP2L3OO
+OOP2L4OO
+OOP2L5OO
+OOP2L6OO
+OOP2L7OO
+OOOOP3L1OOOO
+OOOOP3L2OOOO
+OOOOP3L3OOOO
+OOOOP3L4OOOO
+OOOOP3L5OOOO
+OOOOP3L6OOOO
+$ 
