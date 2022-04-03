@@ -188,7 +188,7 @@ int run(char* script){
 
 	//load script into shell
 	errCode = myinit(script);
-	if(errCode == 11){
+	if(errCode != 0){
 		return handleError(errCode);
 	}
 

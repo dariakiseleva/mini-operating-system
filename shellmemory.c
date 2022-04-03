@@ -111,6 +111,7 @@ int add_file_to_mem(FILE* fp, int* pStart, int* pEnd, char* fileID)
 {
     char line[SHELL_MEM_LENGTH];
     size_t i;
+		size_t j;
     int error_code = 0;
 	bool hasSpaceLeft = false;
 
@@ -128,14 +129,14 @@ int add_file_to_mem(FILE* fp, int* pStart, int* pEnd, char* fileID)
 		return error_code;
 	}
     
-    for (size_t j = i; j < SHELL_MEM_LENGTH; j++){
+    for (j = i; j < SHELL_MEM_LENGTH; j++){
         if(feof(fp))
         {
             *pEnd = (int)j-1;
             break;
         }else{
             fgets(line, 999, fp);
-			shellmemory[j].var = strdup(fileID);
+						shellmemory[j].var = strdup(fileID);
             shellmemory[j].value = strdup(line);
         }
     }
@@ -144,10 +145,11 @@ int add_file_to_mem(FILE* fp, int* pStart, int* pEnd, char* fileID)
 	if(!feof(fp)){
 		error_code = 21;
 		//clean up the file in memory
-		for(int j = 1; i <= SHELL_MEM_LENGTH; i ++){
-			shellmemory[j].var = "none";
-			shellmemory[j].value = "none";
-    	}
+		//printf(shellmemory);
+		// for(int k = i; k < j; k ++){
+		// 	shellmemory[k].var = "none";
+		// 	shellmemory[k].value = "none";
+    // 	}
 		return error_code;
 	}
 

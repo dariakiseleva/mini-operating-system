@@ -49,6 +49,7 @@
 - [x] Write the `resetmem` function
 
 - [x] Copy script files into the backing store. Execute them from there. Get rid of repetition of files error.
+- [ ] Break down what has to happen to run the memory with paging and do it. Load only the first two pages of a file.
 
 ## Maybe back to...? 
 - [ ] Last part of `add_file_to_mem` in A2 where they clean the memory. bugs in for loop? Or not? I don't understand it.
