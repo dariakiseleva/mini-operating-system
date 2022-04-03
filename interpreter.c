@@ -105,7 +105,10 @@ help			Displays all the commands\n \
 quit			Exits / terminates the shell with “Bye!”\n \
 set VAR STRING		Assigns a value to shell memory\n \
 print VAR		Displays the STRING assigned to VAR\n \
-run SCRIPT.TXT		Executes the file SCRIPT.TXT\n ";
+run SCRIPT.TXT		Executes the file SCRIPT.TXT\n \
+exec p1 p2 p3 PLCY	Takes up to 3 programs to execute and policy FCFS, RR, AGING, or SJF\n \
+resetmem		Resets the variable store memory \n";
+
 	printf("%s\n", help_string);
 	return 0;
 }

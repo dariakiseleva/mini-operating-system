@@ -48,7 +48,7 @@
 - [x] Make partitioned shell memory into variables, 100 and 900 for now
 - [x] Write the `resetmem` function
 
-- [ ] Copy script files into the backing store. Execute them from there. Get rid of repetition of files error.
+- [x] Copy script files into the backing store. Execute them from there. Get rid of repetition of files error.
 
 ## Maybe back to...? 
 - [ ] Last part of `add_file_to_mem` in A2 where they clean the memory. bugs in for loop? Or not? I don't understand it.
