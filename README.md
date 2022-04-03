@@ -1,3 +1,26 @@
+# Shortcuts
+
+`make mysh`
+
+`make clean ; make mysh`
+
+`./mysh` (interactive mode)
+
+`./mysh < testfile.txt` (batch mode)
+
+*In A2 and with paging in A3*
+
+`run SCRIPT`
+
+`exec prog1 prog2 prog3 POLICY`
+
+`resetmem`
+
+*With Demand Paging in A3*
+
+`make mysh framesize=300 varmemsize=100`
+
+
 # To-do
 
 ## Learning
@@ -19,4 +42,6 @@
 
 ## The Work
 
-- [ ] Part 1 - setup
+- [x] Write function that creates folder
+- [x] Write function that deletes folder
+- [ ] Integrate both functions into main program, compile new file together -> Order of compilation
