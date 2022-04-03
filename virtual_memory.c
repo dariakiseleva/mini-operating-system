@@ -9,7 +9,7 @@
 #include <unistd.h>
 
 
-void create_backing_store(){
+void reset_backing_store(){
   struct stat st = {0};
   //If Directory doesn't exist, we create it
   if (stat("./backing_store", &st) == -1) {
@@ -18,7 +18,7 @@ void create_backing_store(){
   //If it exists, we delete it first and then call create again
   else {
     delete_backing_store();
-    create_backing_store();
+    reset_backing_store();
   }
 }
 

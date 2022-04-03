@@ -2,7 +2,7 @@
 #define VIRTUAL_MEMORY_H
 
 
-void create_backing_store();
+void reset_backing_store();
 void delete_backing_store();
 
 

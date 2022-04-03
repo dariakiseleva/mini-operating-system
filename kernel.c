@@ -11,6 +11,9 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+//Key variable to keep track of filenames, this must be reset!
+int file_num = 1; ///NOTE: This must be reset!
+
 #define QUEUE_LENGTH 10
 #define MAX_INT 2147483646
 PCB* readyQueue[QUEUE_LENGTH];
@@ -116,12 +119,25 @@ void terminate_task_in_queue_by_index(int i){
 }
 
 int myinit(const char *filename){
+    //store name of new file, which is: file1, file2, or file3
+    char newfile[20]; 
+    sprintf(newfile, "backing_store/file%i", file_num);
+
+    //write the system command and run it
+    char command[50];
+    sprintf(command, "cp %s %s", filename, newfile);
+    system(command);
+
+    //increment global file_num
+    file_num++;
+
+
     FILE* fp;
     int error_code = 0;
     int* start = (int*)malloc(sizeof(int));
     int* end = (int*)malloc(sizeof(int));
     
-    fp = fopen(filename, "rt");
+    fp = fopen(newfile, "rt"); //Take new file, not original
     if(fp == NULL){
         error_code = 11; // 11 is the error code for file does not exist
         return error_code;

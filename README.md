@@ -26,7 +26,7 @@
 ## Learning
 
 *Key*
-- [ ] A3 intro video
+- [x] A3 intro video
 
 *Labs*
 
@@ -48,7 +48,7 @@
 - [x] Make partitioned shell memory into variables, 100 and 900 for now
 - [x] Write the `resetmem` function
 
-- [ ] 
+- [ ] Copy script files into the backing store. Execute them from there. Get rid of repetition of files error.
 
-## Come back to...
-- [ ] Last part of `add_file_to_mem` in A2 where they clean the memory. bugs in for loop?
+## Maybe back to...? 
+- [ ] Last part of `add_file_to_mem` in A2 where they clean the memory. bugs in for loop? Or not? I don't understand it.

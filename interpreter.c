@@ -192,49 +192,48 @@ int run(char* script){
 	//run with FCFS
 	scheduler(0);
 
+	//Empty the backing store and start count files from 1 again
+	reset_backing_store();
+	file_num = 1; //Global variable in kernel.c
+
 	return errCode;
 }
 
 int exec(char *fname1, char *fname2, char *fname3, char* policy){
-	if(fname2!=NULL){
-		if(strcmp(fname1,fname2)==0){
-			return badcommand_same_file_name();
-		}
-	}
-	if(fname3!=NULL){
-		if(strcmp(fname1,fname3)==0 || strcmp(fname2,fname3)==0){
-			return badcommand_same_file_name();
-		}
-		
-	}
 
-    int error_code = 0;
+  int error_code = 0;
 
 	int policyNumber = get_scheduling_policy_number(policy);
 	if(policyNumber == 15){
 		return handleError(policyNumber);
 	}
 
-    if(fname1 != NULL){
-        error_code = myinit(fname1);
+	if(fname1 != NULL){
+			error_code = myinit(fname1);
 		if(error_code != 0){
 			return handleError(error_code);
 		}
-    }
-    if(fname2 != NULL){
-        error_code = myinit(fname2);
+	}
+	if(fname2 != NULL){
+			error_code = myinit(fname2);
 		if(error_code != 0){
 			return handleError(error_code);
 		}
-    }
-    if(fname3 != NULL){
-        error_code = myinit(fname3);
+	}
+	if(fname3 != NULL){
+			error_code = myinit(fname3);
 		if(error_code != 0){
 			return handleError(error_code);
 		}
-    }
+	}
     
 	scheduler(policyNumber);
+
+	//Empty the backing store and start count files from 1 again
+	reset_backing_store();
+	file_num = 1; //Global variable in kernel.c
+
+
 	return error_code;
 }
 
