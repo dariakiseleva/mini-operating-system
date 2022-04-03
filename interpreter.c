@@ -3,6 +3,7 @@
 #include <string.h> 
 
 #include "shellmemory.h"
+#include "virtual_memory.h"
 #include "shell.h"
 #include "kernel.h"
 
@@ -104,6 +105,8 @@ run SCRIPT.TXT		Executes the file SCRIPT.TXT\n ";
 }
 
 int quit(){
+	//Delete backing store
+	delete_backing_store();
 	printf("%s\n", "Bye!");
 	exit(0);
 }

@@ -4,8 +4,10 @@
 #include <stdbool.h>
 #include <time.h>
 
+
 #include "interpreter.h"
 #include "shellmemory.h"
+#include "virtual_memory.h"
 #include "kernel.h"
 
 
@@ -13,6 +15,9 @@ int MAX_USER_INPUT = 1000;
 int parseInput(char ui[]);
 
 int main(int argc, char *argv[]) {
+
+	//Init backing store
+	create_backing_store();
 
 	printf("%s\n", "Shell version 1.1 Created January 2022");
 	help();

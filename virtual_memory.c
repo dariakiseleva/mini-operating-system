@@ -14,7 +14,6 @@ void create_backing_store(){
   //If Directory doesn't exist, we create it
   if (stat("./backing_store", &st) == -1) {
       system("mkdir backing_store");
-     // mkdir("./backing_store", 0700);
   } 
   //If it exists, we delete it first and then call create again
   else {
@@ -28,8 +27,8 @@ void delete_backing_store(){
 }
 
 
-//CODE FOR TEXTING
-int main(int argc, char *argv[]) {
-  // delete_backing_store();
-  // create_backing_store();
-}
+// //CODE FOR TEXTING
+// int main(int argc, char *argv[]) {
+//   // delete_backing_store();
+//   // create_backing_store();
+// }
