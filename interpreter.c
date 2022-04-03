@@ -11,6 +11,7 @@ int MAX_ARGS_SIZE = 7;
 
 int help();
 int quit();
+// resetmem() is in shellmemory.c
 int badcommand();
 int badcommandTooManyTokens();
 int bad_command_file_does_not_exist();
@@ -50,7 +51,12 @@ int interpreter(char* command_args[], int args_size){
 		if (args_size != 1) return badcommand();
 		return quit();
 
-	} else if (strcmp(command_args[0], "set")==0) {
+	} else if (strcmp(command_args[0], "resetmem")==0) {
+		//quit
+		if (args_size != 1) return badcommand();
+		return resetmem();
+
+	}else if (strcmp(command_args[0], "set")==0) {
 		//set
 		if (args_size < 3) return badcommand();
 		char* value = (char*)calloc(1,150);

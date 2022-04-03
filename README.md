@@ -44,4 +44,16 @@
 
 - [x] Write function that creates folder
 - [x] Write function that deletes folder
-- [ ] Integrate both functions into main program, compile new file together -> Order of compilation
+- [x] Integrate both functions into main program, compile new file together -> Order of compilation
+
+- [ ] Make partitioned shell memory into variables, 100 and 900 for now
+- [ ] Write the `resetmem` function
+- [ ] 
+
+## Come back to...
+- [ ] Last part of `add_file_to_mem` in A2 where they clean the memory. bugs in for loop?
+
+
+#define FRAME_MEM_SIZE 900
+#define VAR_MEM_SIZE 100
+#define SHELL_MEM_LENGTH (VAR_MEM_SIZE + FRAME_MEM_SIZE)

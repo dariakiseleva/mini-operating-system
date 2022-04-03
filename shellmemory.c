@@ -3,7 +3,13 @@
 #include<stdio.h>
 #include<stdbool.h>
 
-#define SHELL_MEM_LENGTH 1000
+/*
+[---Variables (e.g. 0 to 99---][----Frame space (e.g. 100 to 999---]
+*/
+
+#define VAR_MEM_SIZE 100
+#define FRAME_MEM_SIZE 900
+#define SHELL_MEM_LENGTH (VAR_MEM_SIZE + FRAME_MEM_SIZE)
 
 struct memory_struct{
 	char *var;
@@ -68,10 +74,21 @@ char* mem_get_value_by_line(int line){
 
 void clean_mem(int start, int end){
     for(int i = start; i <= end; i ++){
-        shellmemory[i].var = "none";
-		shellmemory[i].value = "none";
+      shellmemory[i].var = "none";
+			shellmemory[i].value = "none";
     }
 }
+
+
+//Delete contents of variable store
+int resetmem(){
+	  for(int i = 0; i < VAR_MEM_SIZE; i ++){
+      shellmemory[i].var = "none";
+			shellmemory[i].value = "none";
+    }
+}
+
+
 
 /*
  * Function:  addFileToMem 
@@ -79,7 +96,7 @@ void clean_mem(int start, int end){
  * --------------------
  * Load the source code of the file fp into the shell memory:
  * 		Loading format - var stores fileID, value stores a line
- *		Note that the first 100 lines are for set command, the rests are for run and exec command
+ *		Note that the first [[[100]]] lines are for set command, the rests are for run and exec command
  *
  *  pStart: This function will store the first line of the loaded file 
  * 			in shell memory in here
@@ -97,7 +114,7 @@ int add_file_to_mem(FILE* fp, int* pStart, int* pEnd, char* fileID)
     int error_code = 0;
 	bool hasSpaceLeft = false;
 
-    for (i = 100; i < SHELL_MEM_LENGTH; i++){
+    for (i = VAR_MEM_SIZE; i < SHELL_MEM_LENGTH; i++){
         if(strcmp(shellmemory[i].var,"none") == 0){
             *pStart = (int)i;
 			hasSpaceLeft = true;
