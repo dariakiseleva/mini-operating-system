@@ -23,11 +23,22 @@ void ready_queue_initialize()
     for (size_t i = 0; i < QUEUE_LENGTH; ++i)
     {
         readyQueue[i] = (PCB*)malloc(sizeof(PCB));
-        (*readyQueue[i]).PC = -1;
-        (*readyQueue[i]).start = -1;
-        (*readyQueue[i]).end = -1;
-        (*readyQueue[i]).pid = NULL;
-        (*readyQueue[i]).job_length_score = -1;
+        readyQueue[i]->pid = NULL;
+        
+
+        // //DELETE
+        // (*readyQueue[i]).PC = -1;
+        // (*readyQueue[i]).start = -1;
+        // (*readyQueue[i]).end = -1;
+        // (*readyQueue[i]).job_length_score = -1;
+        // //
+
+        // (*readyQueue[i]).pid = NULL;
+        // (*readyQueue[i]).bs_filename = NULL;
+
+
+        // (*readyQueue[i]).pagetable = buff_table;
+        
     }
 }
 
@@ -73,12 +84,36 @@ PCB ready_queue_pop(int index, bool inPlace)
 void ready_queue_add_to_end(PCB *pPCB)
 {
     for(int i = 0; i < QUEUE_LENGTH; i++){
-        if ( (*readyQueue[i]).start == -1 ){
-            (*readyQueue[i]).PC = (*pPCB).PC;
-            (*readyQueue[i]).start = (*pPCB).start;
-            (*readyQueue[i]).end = (*pPCB).end;
-            (*readyQueue[i]).pid = (*pPCB).pid;
-            (*readyQueue[i]).job_length_score = (*pPCB).job_length_score;
+        if (readyQueue[i]->pid == NULL ){
+
+            printf("We got to here");
+
+            (*readyQueue[i])=(*pPCB);
+
+            printf("\n\nThis is the pid at the end of the queue: %s\n\n", readyQueue[i]->pid);
+
+            // //To be deleted
+            // (*readyQueue[i]).PC = (*pPCB).PC;
+            // (*readyQueue[i]).start = (*pPCB).start;
+            // (*readyQueue[i]).end = (*pPCB).end;
+            // (*readyQueue[i]).job_length_score = (*pPCB).job_length_score;
+            // //To be deleted
+
+            // (*readyQueue[i]).pid = (*pPCB).pid;
+            
+            // //char buff[100];
+            // strcpy((*readyQueue[i]).bs_filename , (*pPCB).bs_filename);
+
+            // //(*readyQueue[i]).bs_filename = (*pPCB).bs_filename;
+            // (*readyQueue[i]).page_counter = (*pPCB).page_counter;
+            // (*readyQueue[i]).line_in_page = (*pPCB).line_in_page;
+
+            // int buff_table[1000];
+            // for (int i=0; i<1000; i++){
+            //     buff_table[i]=(*pPCB).pagetable[i];
+            // }
+
+            // (*readyQueue[i]).pagetable = buff_table;
             break;
         }
     }
@@ -153,9 +188,9 @@ int myinit(const char*filename){
     }
 
     //FIX THIS LATER
-    //ready_queue_add_to_end(newPCB);
+    ready_queue_add_to_end(newPCB);
 
-    return error_code;
+    //return error_code;
 
 }
 

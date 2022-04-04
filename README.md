@@ -51,7 +51,8 @@
 - [x] Copy script files into the backing store. Execute them from there. Get rid of repetition of files error.
 
 - [x] Start the new `myinit` function 
-- [ ] Write function that loads a page into memory and updates pagetable of the PCB
+- [x] Write function that loads a page into memory and updates pagetable of the PCB
+- [ ] Fix the PCB queue issue, including the initialize function
 
 ## Maybe back to...? 
 - [ ] Last part of `add_file_to_mem` in A2 where they clean the memory. bugs in for loop? Or not? I don't understand it.

@@ -200,8 +200,6 @@ int load_page(PCB* myPCB, int page_num){
 	int error_code = 0;
 	int file_startline = page_num*3;
 
-	////
-
 	FILE* fp;
 	fp = fopen(myPCB->bs_filename, "rt"); //Take new file, not original
 
@@ -243,10 +241,10 @@ int load_page(PCB* myPCB, int page_num){
 	////
 
 	//Test to print
-	// if(page_num==1){
-	// 	print_shellmemory();
-	// 	print_pagetable(myPCB);
-	// }
+	if(page_num==1){
+		print_shellmemory();
+		print_pagetable(myPCB);
+	}
 
 	//END
 	fclose(fp);
