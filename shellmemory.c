@@ -184,14 +184,14 @@ int add_file_to_mem(FILE* fp, int* pStart, int* pEnd, char* fileID)
 
 
 //Helper functions for conversions
-int pagenum_to_memindex(int pagenum){
-	int memindex = VAR_MEM_SIZE + (pagenum * 3);
+int framenum_to_memindex(int framenum){
+	int memindex = VAR_MEM_SIZE + (framenum * 3);
 	return memindex;
 }
 
-int memindex_to_pagenum(int memindex){
-	int pagenum = (memindex - VAR_MEM_SIZE)/3;
-	return pagenum;
+int memindex_to_framenum(int memindex){
+	int framenum = (memindex - VAR_MEM_SIZE)/3;
+	return framenum;
 }
 
 //NEW: Load a page into memory
@@ -237,14 +237,14 @@ int load_page(PCB* myPCB, int page_num){
   }
 
 	//free_page_index
-	myPCB->pagetable[page_num]=memindex_to_pagenum(free_page_index);
+	myPCB->pagetable[page_num]=memindex_to_framenum(free_page_index);
 	////
 
 	//Test to print
-	if(page_num==1){
-		print_shellmemory();
-		print_pagetable(myPCB);
-	}
+	// if(page_num==1){
+	// 	print_shellmemory();
+	// 	print_pagetable(myPCB);
+	// }
 
 	//END
 	fclose(fp);

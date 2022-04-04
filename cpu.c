@@ -70,3 +70,40 @@ int cpu_run(int quanta, int end){
     error_code = 0;
     return error_code;
 }
+
+
+
+//////-----------VIRTUAL
+
+int cpu_run_virtual(PCB *myPCB){
+    int errorCode = 0;
+    int quanta = 6;
+
+    while (quanta!=0){
+
+        //Figure out where in memory to look for the command
+        int index_in_memory = framenum_to_memindex(myPCB->pagetable[myPCB->page_counter]) + myPCB->line_in_page;
+
+        //Get the command from memory
+        char command[1000];
+        strncpy(command, mem_get_value_by_line(index_in_memory),1000);
+
+        if ((strcmp(command, "none")==0)){
+            errorCode=1; //-----------> Stopped in middle of frame, PCB is done
+            return errorCode;
+        }
+
+        parseInput(command);
+
+        //Increment where the program advanced
+        if(myPCB->line_in_page<2){
+            myPCB->line_in_page++;
+        } else {
+            myPCB->page_counter++;
+            myPCB->line_in_page = 0;
+        }
+        quanta-=1;
+    }
+
+    return errorCode;
+}

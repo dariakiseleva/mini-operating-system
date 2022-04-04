@@ -86,11 +86,12 @@ void ready_queue_add_to_end(PCB *pPCB)
     for(int i = 0; i < QUEUE_LENGTH; i++){
         if (readyQueue[i]->pid == NULL ){
 
-            printf("We got to here");
+            //printf("We got to here");
 
             (*readyQueue[i])=(*pPCB);
 
-            printf("\n\nThis is the pid at the end of the queue: %s\n\n", readyQueue[i]->pid);
+            // printf("\n\nThis is the pid at the end of the queue: %s\n\n", readyQueue[i]->pid);
+            break;
 
             // //To be deleted
             // (*readyQueue[i]).PC = (*pPCB).PC;
@@ -114,7 +115,6 @@ void ready_queue_add_to_end(PCB *pPCB)
             // }
 
             // (*readyQueue[i]).pagetable = buff_table;
-            break;
         }
     }
 }
@@ -190,57 +190,9 @@ int myinit(const char*filename){
     //FIX THIS LATER
     ready_queue_add_to_end(newPCB);
 
-    //return error_code;
+    return error_code;
 
 }
-
-
-///-------------------OLD MYINIT
-
-// int myinit2(const char *filename){
-//     //store name of new file, which is: file1, file2, or file3
-//     char newfile[20]; 
-//     sprintf(newfile, "backing_store/file%i", file_num);
-
-//     //write the system command and run it
-//     char command[50];
-//     sprintf(command, "cp %s %s", filename, newfile);
-//     system(command);
-
-//     //increment global file_num
-//     file_num++;
-
-
-//     FILE* fp;
-//     int error_code = 0;
-//     int* start = (int*)malloc(sizeof(int));
-//     int* end = (int*)malloc(sizeof(int));
-    
-//     fp = fopen(newfile, "rt"); //Take new file, not original
-//     if(fp == NULL){
-//         error_code = 11; // 11 is the error code for file does not exist
-//         return error_code;
-//     }
-
-//     //generate a random ID as file ID
-//     char* fileID = (char*)malloc(32);
-//     sprintf(fileID, "%d", rand());
-
-//     error_code = add_file_to_mem(fp, start, end, fileID);
-//     if(error_code != 0){
-//         fclose(fp);
-//         return error_code;
-//     }
-//     PCB* newPCB = makePCB(*start,*end,fileID);
-//     newPCB -> job_length_score = 1 + *end - *start;
-
-//     ready_queue_add_to_end(newPCB);
-
-//     fclose(fp);
-
-//     return error_code;
-// }
-
 
 
 
@@ -273,133 +225,29 @@ int scheduler(int policyNumber){
 
     int cpu_quanta_per_program = 2;
 
-    //FCFS and SJF: running program will stop when it finishes
-    if( policyNumber == 0 || policyNumber == 1 ){
-        cpu_quanta_per_program = MAX_INT;
-    }else if(policyNumber == 3){
-        cpu_quanta_per_program = 1;
-    }
+    //keep running programs while ready queue is not empty
+    while(ready_queue_pop(0,false).pid != NULL)
+    {
+        PCB firstPCB = ready_queue_pop(0,false);
 
-    //scheduling logic for 0: FCFS and 2: RR
-    if(policyNumber == 0 || policyNumber == 2){
-        //keep running programs while ready queue is not empty
-        while(ready_queue_pop(0,false).PC != -1)
-        {
-            PCB firstPCB = ready_queue_pop(0,false);
-            load_PCB_TO_CPU(firstPCB.PC);
-            
-            int error_code_load_PCB_TO_CPU = cpu_run(cpu_quanta_per_program, firstPCB.end);
-            
-            if(error_code_load_PCB_TO_CPU == 2){
-                //the head PCB program has been done, time to reclaim the shell mem
-                clean_mem(firstPCB.start, firstPCB.end);
-                ready_queue_pop(0,true);
-            }
-            if(error_code_load_PCB_TO_CPU == 0){
-                //the head PCB program has finished its quanta, it need to be put to the end of ready queue
-                firstPCB.PC = cpu_get_ip();
-                ready_queue_pop(0,true);
-                ready_queue_add_to_end(&firstPCB);
-            }
-        }
-    }
+        int cpu_error = cpu_run_virtual(&firstPCB);
+        printf("\nI will work on the PCB with wht PID: %s", firstPCB.pid);
 
-    //scheduling policy for 1: SJF
-    if(policyNumber == 1){
-        while(!is_ready_empty())
-        {
-            //task with the lowest lines of codes runs first
-            int task_index_with_the_least_lines;
-            int task_lines = MAX_INT;
-            //get the lowest job length 
-            for(int i = 0; i < QUEUE_LENGTH; i++){
-                if((*readyQueue[i]).start != -1 && 1 + (*readyQueue[i]).end - (*readyQueue[i]).start < task_lines){
-                    task_lines = 1 + (*readyQueue[i]).end - (*readyQueue[i]).start;
-                    task_index_with_the_least_lines = i;
-                }
-            }
 
-            PCB current_task_PCB = (*readyQueue[task_index_with_the_least_lines]);
-            load_PCB_TO_CPU(current_task_PCB.PC);
-            
-            int error_code_load_PCB_TO_CPU = cpu_run(cpu_quanta_per_program, current_task_PCB.end);
-            
-            //the head PCB program has been done, time to reclaim the shell mem
-            clean_mem(current_task_PCB.start, current_task_PCB.end);
-            //put the current PCB into invalid mode
-            terminate_task_in_queue_by_index(task_index_with_the_least_lines);
-        }
-    }
-
-    //scheduling policy for 3: Aging
-    if(policyNumber == 3){
-        int task_index_least_job_length_score;
-        int task_job_length_score = MAX_INT;
-
-        //find job with the lowest job score
-        for(int i = 0; i < QUEUE_LENGTH; i++){
-            //get the lowest job length score
-            if((*readyQueue[i]).start != -1 && (*readyQueue[i]).job_length_score < task_job_length_score){
-                task_job_length_score = (*readyQueue[i]).job_length_score;
-                task_index_least_job_length_score = i;
-            }
-        }
-        //move the task with the lowest job score to the front of the queue
-        PCB job_with_lowest_job_score = ready_queue_pop(task_index_least_job_length_score,true);
-        ready_queue_add_to_front(&job_with_lowest_job_score);
+        exit(1);
         
-        while(!is_ready_empty())
-        {
-            //task with the lowest job length score runs first
-            //in this case, the task with the lowest job length score is the first task in queue
-            task_job_length_score = (*readyQueue[0]).job_length_score;
-            task_index_least_job_length_score = 0;
-
-            PCB current_task_PCB = (*readyQueue[task_index_least_job_length_score]);
-            load_PCB_TO_CPU(current_task_PCB.PC);
-            
-            int error_code_load_PCB_TO_CPU = cpu_run(cpu_quanta_per_program, current_task_PCB.end);
-
-            if(error_code_load_PCB_TO_CPU == 2){
-                //the head PCB program has been done, time to reclaim the shell mem
-                clean_mem((*readyQueue[task_index_least_job_length_score]).start, (*readyQueue[task_index_least_job_length_score]).end);
-                ready_queue_pop(task_index_least_job_length_score, true);
-                task_job_length_score = MAX_INT;
-            }
-
-            if(error_code_load_PCB_TO_CPU == 0){
-                //the head PCB program has finished its quanta
-                (*readyQueue[task_index_least_job_length_score]).PC = cpu_get_ip(); // update the PC for the PCB
-                //Age all the tasks (other than the current executing task) in queue by 1
-                for(int i = 0; i < QUEUE_LENGTH; i++){
-                    //get the lowest job length score
-                    if((*readyQueue[i]).start != -1 && (*readyQueue[i]).job_length_score > 0 && i != task_index_least_job_length_score){
-                        (*readyQueue[i]).job_length_score -= 1;
-                    }
-                }
-            }
-            
-            //if the first task job score is not the lowest, 
-            //then move the frst task to the end 
-            //and the lowest job score task to the front
-            for(int i = 0; i < QUEUE_LENGTH; i++){
-                //get the lowest job length score
-                if((*readyQueue[i]).start != -1 && (*readyQueue[i]).job_length_score < task_job_length_score){
-                    task_job_length_score = (*readyQueue[i]).job_length_score;
-                    task_index_least_job_length_score = i;
-                }
-            }
-            if(task_index_least_job_length_score != 0){
-                //pop the task with the lowest job score 
-                PCB lowest_job_score_task = ready_queue_pop(task_index_least_job_length_score, true);
-                //move the frst task to the end
-                PCB first_pcb = ready_queue_pop(0, true);
-                ready_queue_add_to_end(&first_pcb);
-                //move the lowest job score task to the front
-                ready_queue_add_to_front(&lowest_job_score_task);
-            }
-        
-        }
+        // if(error_code_load_PCB_TO_CPU == 2){
+        //     //the head PCB program has been done, time to reclaim the shell mem
+        //     //clean_mem(firstPCB.start, firstPCB.end); //Delete this, don't clean memory
+        //     ready_queue_pop(0,true);
+        // }
+        // if(error_code_load_PCB_TO_CPU == 0){
+        //     //the head PCB program has finished its quanta, it need to be put to the end of ready queue
+        //     firstPCB.PC = cpu_get_ip(); //FIX THIS
+        //     ready_queue_pop(0,true);
+        //     ready_queue_add_to_end(&firstPCB);
+        // }
+    
     }
 
     //clean up
