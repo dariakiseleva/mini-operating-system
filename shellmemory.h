@@ -2,6 +2,7 @@
 #include<stdio.h>
 #include "pcb.h"
 
+void print_pagetable(PCB* myPCB);
 int framenum_to_memindex(int framenum);
 int memindex_to_framenum(int memindex);
 int load_page(PCB* myPCB, int page_num);

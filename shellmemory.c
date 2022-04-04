@@ -9,8 +9,8 @@
 [---Variables (e.g. 0 to 99---][----Frame space (e.g. 100 to 999---]
 */
 
-#define VAR_MEM_SIZE 100
-#define FRAME_MEM_SIZE 900
+#define VAR_MEM_SIZE 10 //100
+#define FRAME_MEM_SIZE 18 //900
 #define SHELL_MEM_LENGTH (VAR_MEM_SIZE + FRAME_MEM_SIZE)
 
 struct memory_struct{
@@ -115,74 +115,6 @@ int resetmem(){
 }
 
 
-/*
- * Function:  addFileToMem 
- * 	Added in A2
- * --------------------
- * Load the source code of the file fp into the shell memory:
- * 		Loading format - var stores fileID, value stores a line
- *		Note that the first [[[100]]] lines are for set command, the rests are for run and exec command
- *
- *  pStart: This function will store the first line of the loaded file 
- * 			in shell memory in here
- *	pEnd: This function will store the last line of the loaded file 
- 			in shell memory in here
- *  fileID: Input that need to provide when calling the function, 
- 			stores the ID of the file
- * 
- * returns: error code, 21: no space left
- */
-int add_file_to_mem(FILE* fp, int* pStart, int* pEnd, char* fileID)
-{
-    char line[SHELL_MEM_LENGTH];
-    size_t i;
-		size_t j;
-    int error_code = 0;
-	bool hasSpaceLeft = false;
-
-    for (i = VAR_MEM_SIZE; i < SHELL_MEM_LENGTH; i++){
-        if(strcmp(shellmemory[i].var,"none") == 0){
-            *pStart = (int)i;
-			hasSpaceLeft = true;
-            break;
-        }
-    }
-
-	//shell memory is full
-	if(hasSpaceLeft == 0){
-		error_code = 21;
-		return error_code;
-	}
-    
-    for (j = i; j < SHELL_MEM_LENGTH; j++){
-        if(feof(fp))
-        {
-            *pEnd = (int)j-1;
-            break;
-        }else{
-            fgets(line, 999, fp);
-						shellmemory[j].var = strdup(fileID);
-            shellmemory[j].value = strdup(line);
-        }
-    }
-
-	//no space left to load the entire file into shell memory
-	if(!feof(fp)){
-		error_code = 21;
-		//clean up the file in memory
-		//printf(shellmemory);
-		// for(int k = i; k < j; k ++){
-		// 	shellmemory[k].var = "none";
-		// 	shellmemory[k].value = "none";
-    // 	}
-		return error_code;
-	}
-
-    return error_code;
-}
-
-
-
 //Helper functions for conversions
 int framenum_to_memindex(int framenum){
 	int memindex = VAR_MEM_SIZE + (framenum * 3);
@@ -194,7 +126,7 @@ int memindex_to_framenum(int memindex){
 	return framenum;
 }
 
-//NEW: Load a page into memory
+//Load a page into memory
 int load_page(PCB* myPCB, int page_num){
 
 	int error_code = 0;
@@ -236,9 +168,8 @@ int load_page(PCB* myPCB, int page_num){
   	iterator++;
   }
 
-	//free_page_index
+	//Record in which frame the page is stored
 	myPCB->pagetable[page_num]=memindex_to_framenum(free_page_index);
-	////
 
 	//Test to print
 	// if(page_num==1){

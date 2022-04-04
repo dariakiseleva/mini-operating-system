@@ -5,26 +5,18 @@
  * Struct:  PCB 
  * --------------------
  * pid: process(task) id
- * PC: program counter, stores the line that the task is executing
- * start: the first line in shell memory that belongs to this task
- * end: the last line in shell memory that belongs to this task
- * job_length_score: for EXEC AGING use only, stores the job length score
+ * bs_filename: the temporary filename inside the /backing_store directory
+ * page_counter: which page (3 lines) in the document the CPU must work on next
+ * line_in_page: which line within the page (0, 1, or 2) the CPU must work on next
+ * pagetable: array indicating the frame # in shellmemory where a page is stored. E.g. pagetable[0]=1 means that the first page of the file is in frame 1 of shellmemory. If pagetable[x]=-1, then page x is not in shellmemory at all and must be loaded.
  */
 typedef struct
 {
-
-    //To be deleted
-    int start;
-    int end;
-    int PC;
-    int job_length_score;
-
-
     char* pid;
-    int page_counter; ////NEW - Which page of the file is the CPU on
-    int line_in_page; ///NEW - 1 to 3, which line within page is the CPU on
-    int pagetable[1000]; //NEW - which frame a page is stored. Set to -1 if none?
-    char bs_filename[30]; //NEW
+    int page_counter; 
+    int line_in_page; 
+    int pagetable[1000]; 
+    char bs_filename[30]; 
 }PCB;
 
 PCB * makePCB(char* pid, char* bs_filename);
