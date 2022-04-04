@@ -12,12 +12,20 @@
  */
 typedef struct
 {
-    char* pid;
-    int PC;
+
+    //To be deleted
     int start;
     int end;
+    int PC;
     int job_length_score;
+
+
+    char* pid;
+    int page_counter; ////NEW - Which page of the file is the CPU on
+    int line_in_page; ///NEW - 1 to 3, which line within page is the CPU on
+    int pagetable[1000]; //NEW - which frame a page is stored. Set to -1 if none?
+    char bs_filename[30]; //NEW
 }PCB;
 
-PCB * makePCB(int start, int end, char* pid);
+PCB * makePCB(char* pid, char* bs_filename);
 #endif

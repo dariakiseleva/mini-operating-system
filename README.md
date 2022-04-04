@@ -2,7 +2,7 @@
 
 `make mysh`
 
-`make clean ; make mysh`
+`alias run="make clean ; make mysh"`
 
 `./mysh` (interactive mode)
 
@@ -49,7 +49,9 @@
 - [x] Write the `resetmem` function
 
 - [x] Copy script files into the backing store. Execute them from there. Get rid of repetition of files error.
-- [ ] Break down what has to happen to run the memory with paging and do it. Load only the first two pages of a file.
+
+- [x] Start the new `myinit` function 
+- [ ] Write function that loads a page into memory and updates pagetable of the PCB
 
 ## Maybe back to...? 
 - [ ] Last part of `add_file_to_mem` in A2 where they clean the memory. bugs in for loop? Or not? I don't understand it.

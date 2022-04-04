@@ -1,3 +1,5 @@
+#include "pcb.h"
+
 #include<stdlib.h>
 #include<string.h>
 #include<stdio.h>
@@ -17,6 +19,13 @@ struct memory_struct{
 };
 
 struct memory_struct shellmemory[SHELL_MEM_LENGTH];
+
+//HELPER FUNCTION TO DELETE
+void print_shellmemory(){
+	for (int i=VAR_MEM_SIZE; i<SHELL_MEM_LENGTH; i++){
+		printf("Var: %s, value: %s", shellmemory[i].var, shellmemory[i].value);
+	}
+}
 
 // Shell memory functions
 
@@ -89,7 +98,6 @@ int resetmem(){
 }
 
 
-
 /*
  * Function:  addFileToMem 
  * 	Added in A2
@@ -154,4 +162,17 @@ int add_file_to_mem(FILE* fp, int* pStart, int* pEnd, char* fileID)
 	}
 
     return error_code;
+}
+
+
+//NEW: Load a page into memory
+int load_page(PCB* myPCB, int page_num){
+
+	printf("I will load page %i of file %s\n", page_num, myPCB->bs_filename);
+
+	int error_code = 0;
+
+	//
+
+	return error_code;
 }

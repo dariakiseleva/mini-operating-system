@@ -118,49 +118,95 @@ void terminate_task_in_queue_by_index(int i){
     (*readyQueue[i]).job_length_score = -1;
 }
 
-int myinit(const char *filename){
-    //store name of new file, which is: file1, file2, or file3
-    char newfile[20]; 
-    sprintf(newfile, "backing_store/file%i", file_num);
+///-------------------NEW MYINIT
 
-    //write the system command and run it
+int myinit(const char*filename){
+
+    int error_code = 0;
+
+    //Create a name for this file in backing_store
+    char bs_filename[20]; 
+    sprintf(bs_filename, "backing_store/file%i", file_num);
+
+    //Copy the file into the backing store with a new name
     char command[50];
-    sprintf(command, "cp %s %s", filename, newfile);
+    sprintf(command, "cp %s %s", filename, bs_filename);
     system(command);
 
     //increment global file_num
     file_num++;
 
-
-    FILE* fp;
-    int error_code = 0;
-    int* start = (int*)malloc(sizeof(int));
-    int* end = (int*)malloc(sizeof(int));
-    
-    fp = fopen(newfile, "rt"); //Take new file, not original
-    if(fp == NULL){
-        error_code = 11; // 11 is the error code for file does not exist
-        return error_code;
-    }
-
     //generate a random ID as file ID
     char* fileID = (char*)malloc(32);
     sprintf(fileID, "%d", rand());
 
-    error_code = add_file_to_mem(fp, start, end, fileID);
-    if(error_code != 0){
-        fclose(fp);
-        return error_code;
+    //Create PCB
+    PCB* newPCB = makePCB(fileID, bs_filename);
+
+    //Load two pages, return error if something is wrong? For now?
+    for (int page_num=0; page_num<=1; page_num++){
+        error_code = load_page(newPCB, page_num); //---> Send to load page
+        if(error_code != 0){
+            //fclose(fp);
+            return error_code;
+        }
     }
-    PCB* newPCB = makePCB(*start,*end,fileID);
-    newPCB -> job_length_score = 1 + *end - *start;
 
-    ready_queue_add_to_end(newPCB);
-
-    fclose(fp);
+    //More work here
 
     return error_code;
+
 }
+
+
+///-------------------OLD MYINIT
+
+// int myinit2(const char *filename){
+//     //store name of new file, which is: file1, file2, or file3
+//     char newfile[20]; 
+//     sprintf(newfile, "backing_store/file%i", file_num);
+
+//     //write the system command and run it
+//     char command[50];
+//     sprintf(command, "cp %s %s", filename, newfile);
+//     system(command);
+
+//     //increment global file_num
+//     file_num++;
+
+
+//     FILE* fp;
+//     int error_code = 0;
+//     int* start = (int*)malloc(sizeof(int));
+//     int* end = (int*)malloc(sizeof(int));
+    
+//     fp = fopen(newfile, "rt"); //Take new file, not original
+//     if(fp == NULL){
+//         error_code = 11; // 11 is the error code for file does not exist
+//         return error_code;
+//     }
+
+//     //generate a random ID as file ID
+//     char* fileID = (char*)malloc(32);
+//     sprintf(fileID, "%d", rand());
+
+//     error_code = add_file_to_mem(fp, start, end, fileID);
+//     if(error_code != 0){
+//         fclose(fp);
+//         return error_code;
+//     }
+//     PCB* newPCB = makePCB(*start,*end,fileID);
+//     newPCB -> job_length_score = 1 + *end - *start;
+
+//     ready_queue_add_to_end(newPCB);
+
+//     fclose(fp);
+
+//     return error_code;
+// }
+
+
+
 
 int get_scheduling_policy_number(char* policy){
     if(strcmp("FCFS",policy)==0){
