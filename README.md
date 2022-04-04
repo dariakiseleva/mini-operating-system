@@ -42,17 +42,7 @@
 
 ## The Work
 
-- [x] Write function that creates folder
-- [x] Write function that deletes folder
-- [x] Integrate both functions into main program, compile new file together -> Order of compilation
-- [x] Make partitioned shell memory into variables, 100 and 900 for now
-- [x] Write the `resetmem` function
-
-- [x] Copy script files into the backing store. Execute them from there. Get rid of repetition of files error.
-
-- [x] Start the new `myinit` function 
-- [x] Write function that loads a page into memory and updates pagetable of the PCB
-- [ ] Fix the PCB queue issue, including the initialize function
+- [x] Complete paging without demand - pass test1 and test2
 
 ## Maybe back to...? 
 - [ ] Last part of `add_file_to_mem` in A2 where they clean the memory. bugs in for loop? Or not? I don't understand it.

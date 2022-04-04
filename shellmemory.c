@@ -6,11 +6,22 @@
 #include<stdbool.h>
 
 /*
-[---Variables (e.g. 0 to 99---][----Frame space (e.g. 100 to 999---]
+
+Frame Store Size = 21; Variable Store Size = 10
+
+[---Variables---][----Frames (multiple of 3)----]
 */
 
-#define VAR_MEM_SIZE 10 //100
-#define FRAME_MEM_SIZE 18 //900
+// int VAR_MEM_SIZE = VARMEMSIZE;
+// int FRAME_MEM_SIZE = FRAMESIZE;
+//#define SHELL_MEM_LENGTH (VAR_MEM_SIZE + FRAME_MEM_SIZE)
+
+// int VAR_MEM_SIZE = VARMEMSIZE;
+// int FRAME_MEM_SIZE = FRAMESIZE;
+// int SHELL_MEM_LENGTH = VAR_MEM_SIZE + FRAME_MEM_SIZE;
+
+//printf("...%s", VAR_MEM_SIZE);
+
 #define SHELL_MEM_LENGTH (VAR_MEM_SIZE + FRAME_MEM_SIZE)
 
 struct memory_struct{

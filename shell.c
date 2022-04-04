@@ -19,8 +19,10 @@ int main(int argc, char *argv[]) {
 	//Init backing store
 	reset_backing_store();
 
-	printf("%s\n", "Shell version 1.1 Created January 2022");
+	printf("\n%s\n", "Shell version 1.3 Created April 2022");
 	help();
+	printf("\nFrame Store Size = %i, Variable Store Size = %i\n\n", FRAME_MEM_SIZE, VAR_MEM_SIZE);
+
 
 	char prompt = '$';  				// Shell prompt
 	char userInput[MAX_USER_INPUT];		// user's input stored here
