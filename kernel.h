@@ -5,6 +5,7 @@
 
 //Variable
 extern int file_num;
+extern PCB* readyQueue[];
 
 //Functions
 void ready_queue_initialize();

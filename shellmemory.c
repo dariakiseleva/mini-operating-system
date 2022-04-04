@@ -1,4 +1,5 @@
 #include "pcb.h"
+#include "kernel.h"
 
 #include<stdlib.h>
 #include<string.h>
@@ -10,19 +11,11 @@
 Frame Store Size = 21; Variable Store Size = 10
 
 [---Variables---][----Frames (multiple of 3)----]
+
 */
 
-// int VAR_MEM_SIZE = VARMEMSIZE;
-// int FRAME_MEM_SIZE = FRAMESIZE;
-//#define SHELL_MEM_LENGTH (VAR_MEM_SIZE + FRAME_MEM_SIZE)
-
-// int VAR_MEM_SIZE = VARMEMSIZE;
-// int FRAME_MEM_SIZE = FRAMESIZE;
-// int SHELL_MEM_LENGTH = VAR_MEM_SIZE + FRAME_MEM_SIZE;
-
-//printf("...%s", VAR_MEM_SIZE);
-
 #define SHELL_MEM_LENGTH (VAR_MEM_SIZE + FRAME_MEM_SIZE)
+#define HIGHEST_FRAME_INDEX ((FRAME_MEM_SIZE/3)-1)
 
 struct memory_struct{
 	char *var;
@@ -30,6 +23,8 @@ struct memory_struct{
 };
 
 struct memory_struct shellmemory[SHELL_MEM_LENGTH];
+
+//Print before greeting
 
 //HELPER FUNCTION TO DELETE LATER
 void print_shellmemory(){
@@ -191,4 +186,33 @@ int load_page(PCB* myPCB, int page_num){
 	//END
 	fclose(fp);
 	return error_code;
+}
+
+
+//Clear a page
+
+char* clear_frame(){
+	//int max_frame_num = (FRAME_MEM_SIZE/3)-1;
+	int frame_to_remove = (rand() % (HIGHEST_FRAME_INDEX - 0 + 1)) + 0;
+	printf("\nThe max is %i and I will remove frame %i\n", HIGHEST_FRAME_INDEX, frame_to_remove);
+
+	char *kicked_pid = shellmemory[framenum_to_memindex(frame_to_remove)].var;
+	printf("Page fault! Victim page contents:\n");
+
+	int line_num = 0;
+	while(line_num < 3){
+		if (strcmp(shellmemory[framenum_to_memindex(frame_to_remove)+line_num].var, "none")!=0){
+			//Print the line
+			printf("%s", shellmemory[framenum_to_memindex(frame_to_remove)+line_num].value);
+			//Delete it
+			shellmemory[framenum_to_memindex(frame_to_remove)+line_num].var="none";
+			shellmemory[framenum_to_memindex(frame_to_remove)+line_num].value="none";
+		}
+		line_num ++;
+	}
+
+	printf("End of victim page contents");
+
+	return kicked_pid; //A string
+
 }

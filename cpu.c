@@ -20,9 +20,9 @@ int cpu_run_virtual(PCB *myPCB){
 
     while (quanta!=0){
 
-        //DRAFT-------------
+        //If the next page is not in memory, return PAGE FAULT
         if (myPCB->pagetable[myPCB->page_counter]==-1){
-            errorCode=1;
+            errorCode=2;
             return errorCode;
         }
 

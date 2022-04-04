@@ -140,6 +140,10 @@ int get_scheduling_policy_number(char* policy){
 }
 
 
+
+
+
+
 // Only left part of scheduler that deals with RR policy
 int scheduler(int policyNumber){
     int error_code = 0;
@@ -154,6 +158,23 @@ int scheduler(int policyNumber){
         //If PCB is done, take it off the queue
         if(cpu_error == 1){
             ready_queue_pop(0,true); //Pop the head of the queue with removal
+        }
+
+        //If PAGE FAULT
+        if(cpu_error == 2){
+            ready_queue_pop(0,true); //Put PCB in back of queue
+
+            //Take some page out of memory -> print the message to screen, update the pagetable for that other PCB
+
+            //Load one more page of the original PCB, update its pagetable
+
+            //Erase frame contents
+            char* kicked_pid = clear_frame();
+
+
+
+            printf("\nThe kicked pid was: %s\n", kicked_pid);
+            exit(1);
         }
 
         if(cpu_error == 0){
