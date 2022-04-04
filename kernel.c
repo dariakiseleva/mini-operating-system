@@ -152,7 +152,8 @@ int myinit(const char*filename){
         }
     }
 
-    //More work here
+    //FIX THIS LATER
+    //ready_queue_add_to_end(newPCB);
 
     return error_code;
 

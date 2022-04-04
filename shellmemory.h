@@ -2,6 +2,8 @@
 #include<stdio.h>
 #include "pcb.h"
 
+int pagenum_to_memindex(int pagenum);
+int memindex_to_pagenum(int memindex);
 int load_page(PCB* myPCB, int page_num);
 void mem_init();
 char *mem_get_value(char *var);

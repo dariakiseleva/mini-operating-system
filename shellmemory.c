@@ -20,12 +20,29 @@ struct memory_struct{
 
 struct memory_struct shellmemory[SHELL_MEM_LENGTH];
 
-//HELPER FUNCTION TO DELETE
+//HELPER FUNCTION TO DELETE LATER
 void print_shellmemory(){
+	printf("\n");
 	for (int i=VAR_MEM_SIZE; i<SHELL_MEM_LENGTH; i++){
-		printf("Var: %s, value: %s", shellmemory[i].var, shellmemory[i].value);
+			if (shellmemory[i].var!="none"){
+			printf("Index: %i, Var: %s, value: %s", i, shellmemory[i].var, shellmemory[i].value);
+		}
 	}
 }
+
+void print_pagetable(PCB* myPCB){
+
+	printf("\n\nPagetable of PID %s\n\n", myPCB->pid);
+	for (int i=0; i<1000; i++){
+		if (myPCB->pagetable[i]!=-1){
+			printf("pagetable[%i]=%i\n", i, myPCB->pagetable[i]);
+		}
+	}
+}
+
+
+///-------------
+
 
 // Shell memory functions
 
@@ -165,14 +182,73 @@ int add_file_to_mem(FILE* fp, int* pStart, int* pEnd, char* fileID)
 }
 
 
+
+//Helper functions for conversions
+int pagenum_to_memindex(int pagenum){
+	int memindex = VAR_MEM_SIZE + (pagenum * 3);
+	return memindex;
+}
+
+int memindex_to_pagenum(int memindex){
+	int pagenum = (memindex - VAR_MEM_SIZE)/3;
+	return pagenum;
+}
+
 //NEW: Load a page into memory
 int load_page(PCB* myPCB, int page_num){
 
-	printf("I will load page %i of file %s\n", page_num, myPCB->bs_filename);
-
 	int error_code = 0;
+	int file_startline = page_num*3;
 
-	//
+	////
 
+	FILE* fp;
+	fp = fopen(myPCB->bs_filename, "rt"); //Take new file, not original
+
+	//Make sure file exists
+	if(fp == NULL){
+		error_code = 11; // 11 is the error code for file does not exist
+		return error_code;
+	}
+
+	//Find a free page in memory, store its first index
+	int free_page_index=-1;
+	for(int i=VAR_MEM_SIZE; i<SHELL_MEM_LENGTH; i+=3){ //Iterate by PAGES
+		if (shellmemory[i].var == "none"){ //If the first index is free, whole page is free
+			free_page_index=i;
+			break;
+		}
+	}
+
+	if (free_page_index==-1){
+		error_code = 22; ///<-------No memspace error
+		return error_code;
+	}
+
+	int iterator = 0; //to iterate through file
+	int free_index=free_page_index; //index to use for lines
+	
+	char buf[1000]; //To load the line
+  while (fgets(buf,1000, fp)!=NULL) {
+    if (iterator == file_startline || iterator == (file_startline+1) || iterator == (file_startline+2)){
+			shellmemory[free_index].var = strdup(myPCB->pid);
+      shellmemory[free_index].value = strdup(buf);
+			free_index++;
+    }
+  	iterator++;
+  }
+
+	//free_page_index
+	myPCB->pagetable[page_num]=memindex_to_pagenum(free_page_index);
+	////
+
+	//Test to print
+	// if(page_num==1){
+	// 	print_shellmemory();
+	// 	print_pagetable(myPCB);
+	// }
+
+	//END
+	fclose(fp);
 	return error_code;
 }
