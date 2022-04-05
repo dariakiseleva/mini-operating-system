@@ -6,5 +6,5 @@ clean:
 	rm mysh; rm *.o
 
 
-#alias r="make clean ; make mysh framesize=21 varmemsize=10 ; ./mysh"
+#alias r="make clean ; make mysh framesize=18 varmemsize=10 ; ./mysh"
 #exec prog7 prog8 prog9 RR

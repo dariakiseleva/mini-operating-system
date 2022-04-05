@@ -121,6 +121,15 @@ int resetmem(){
 }
 
 
+int has_frame_space(){
+	for(int i=VAR_MEM_SIZE; i<SHELL_MEM_LENGTH; i+=3){
+		if (shellmemory[i].var=="none"){
+			return 1; //Yes, has space
+		}
+	}
+	return 0; //No, has no space
+}
+
 //Helper functions for conversions
 int framenum_to_memindex(int framenum){
 	int memindex = VAR_MEM_SIZE + (framenum * 3);
@@ -163,16 +172,25 @@ int load_page(PCB* myPCB, int page_num){
 
 	int iterator = 0; //to iterate through file
 	int free_index=free_page_index; //index to use for lines
+	int loaded_something = 0;
 	
 	char buf[1000]; //To load the line
   while (fgets(buf,1000, fp)!=NULL) {
     if (iterator == file_startline || iterator == (file_startline+1) || iterator == (file_startline+2)){
+			loaded_something = 1;
 			shellmemory[free_index].var = strdup(myPCB->pid);
       shellmemory[free_index].value = strdup(buf);
 			free_index++;
     }
   	iterator++;
   }
+
+	//If nothing was loaded, the file has finished
+	//Return specific error
+	if (loaded_something==0){
+		printf("\nNothing to load, %s does not have page #%i\n", myPCB->pid, page_num);
+		exit(1);
+	}
 
 	//Record in which frame the page is stored
 	myPCB->pagetable[page_num]=memindex_to_framenum(free_page_index);
@@ -189,30 +207,38 @@ int load_page(PCB* myPCB, int page_num){
 }
 
 
-//Clear a page
+//Choose a page to take out of memory, update pagetable of the PCB to which the page belonged
+void clear_frame(){
+	//Choose frame to remove - for now randomly
+	int frame_to_remove = (rand() % (HIGHEST_FRAME_INDEX - 0 + 1)) + 0; 
 
-char* clear_frame(){
-	//int max_frame_num = (FRAME_MEM_SIZE/3)-1;
-	int frame_to_remove = (rand() % (HIGHEST_FRAME_INDEX - 0 + 1)) + 0;
-	printf("\nThe max is %i and I will remove frame %i\n", HIGHEST_FRAME_INDEX, frame_to_remove);
+	//Record which program/PCB the victim frame was occupied by
+	char *victim_pid = shellmemory[framenum_to_memindex(frame_to_remove)].var;
 
-	char *kicked_pid = shellmemory[framenum_to_memindex(frame_to_remove)].var;
-	printf("Page fault! Victim page contents:\n");
 
+	printf("\nPage fault! Victim page contents:\n");
+	//Iterate through up to 3 lines of the frame, print them out and clear them
 	int line_num = 0;
 	while(line_num < 3){
 		if (strcmp(shellmemory[framenum_to_memindex(frame_to_remove)+line_num].var, "none")!=0){
-			//Print the line
 			printf("%s", shellmemory[framenum_to_memindex(frame_to_remove)+line_num].value);
-			//Delete it
 			shellmemory[framenum_to_memindex(frame_to_remove)+line_num].var="none";
 			shellmemory[framenum_to_memindex(frame_to_remove)+line_num].value="none";
 		}
 		line_num ++;
 	}
+	printf("\nEnd of victim page contents.\n");
 
-	printf("End of victim page contents");
+	print_shellmemory();
 
-	return kicked_pid; //A string
+	//Find which PCB had its page erased
+	PCB* kicked_PCB = get_PCB_from_pid(victim_pid);
+
+	//Update the pagetable of the kicked PCB
+	for (int i=0; i < 1000; i++){
+		if(kicked_PCB->pagetable[i]==frame_to_remove){
+			kicked_PCB->pagetable[i]=-1;
+		}
+	}
 
 }

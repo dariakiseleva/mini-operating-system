@@ -2,7 +2,9 @@
 #include<stdio.h>
 #include "pcb.h"
 
-char* clear_frame();
+int has_frame_space();
+void clear_frame();
+void print_shellmemory();
 void print_pagetable(PCB* myPCB);
 int framenum_to_memindex(int framenum);
 int memindex_to_framenum(int memindex);
