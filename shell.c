@@ -13,9 +13,6 @@ int parseInput(char ui[]);
 
 int main(int argc, char *argv[]) {
 
-	//Init backing store
-	reset_backing_store();
-
 	printf("\n%s\n", "Shell version 1.3 Created April 2022");
 	help();
 	printf("\nFrame Store Size = %i, Variable Store Size = %i\n\n", FRAME_MEM_SIZE, VAR_MEM_SIZE);
@@ -25,17 +22,18 @@ int main(int argc, char *argv[]) {
 	char userInput[MAX_USER_INPUT];		// user's input stored here
 	int errorCode = 0;					// zero means no error, default
 
-	//init user input
-	for (int i=0; i<MAX_USER_INPUT; i++)
-		userInput[i] = '\0';
 	
-	//initialize
+	//Initialize things
+	reset_backing_store();
 	mem_init();
 	ready_queue_initialize();
 	lru_queue_init();
-
 	//initialize random number generator, for fileID and pid generation
 	srand(time(NULL));
+	
+	//init user input
+	for (int i=0; i<MAX_USER_INPUT; i++)
+		userInput[i] = '\0';
 	
 	while(1) {						
 		printf("%c ",prompt);

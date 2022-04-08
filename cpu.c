@@ -13,7 +13,7 @@
 #include <string.h>
 
 
-//Return 1 if file still has page we try to access, 0 if not
+//Helper function: return 1 if file still has page we try to access (page #s starts at 0), 0 if not
 int file_has_page(PCB *myPCB, int page_num){
 
     FILE* fp;
@@ -42,17 +42,17 @@ int file_has_page(PCB *myPCB, int page_num){
 int cpu_run_virtual(PCB *myPCB){
 
     int errorCode = 0;
-    int quanta = 2; //Hard-coded the quanta
+    int quanta = 2; //Hard-coded quanta
 
     while (quanta!=0){
 
-        //If the next page is not in memory, return PAGE FAULT
+        //If file actually has the next page but that page is not in memory, return to PAGE FAULT
         if (file_has_page(myPCB, myPCB->page_counter)==1 && myPCB->pagetable[myPCB->page_counter]==-1){
             errorCode=2;
             return errorCode;
         }
 
-        //Figure out where in memory to look for the command
+        //Use data in the PCB to figure out where in memory the command starts 
         int source_frame = myPCB->pagetable[myPCB->page_counter];
         int index_in_memory = framenum_to_memindex(source_frame) + myPCB->line_in_page;
 
@@ -60,14 +60,16 @@ int cpu_run_virtual(PCB *myPCB){
         char command[1000];
         strncpy(command, mem_get_value_by_line(index_in_memory),1000);
 
+        //Stopped in middle of a frame, which means the PCB has finished its program
         if ((strcmp(command, "none")==0)){
-            errorCode=1; //We stopped in middle of a frame, so this PCB is done
+            errorCode=1; 
             return errorCode;
         }
 
-        parseInput(command); //-----> Execute the line!
+        //Finally send the line to be parsed, interpreted, and executed!
+        parseInput(command); 
 
-        //Increment where the program advanced for the next CPU operation
+        //In the PCB, increment where the program advanced for the next CPU operation
         if((myPCB->line_in_page)<2){
             myPCB->line_in_page++;
         } else {
@@ -75,11 +77,10 @@ int cpu_run_virtual(PCB *myPCB){
             myPCB->line_in_page = 0;
         }
 
-        //frame was used, so move it back in the LRU queue
+        //frame was used, so move it to the back of the LRU queue
         lru_queue_add_to_end(source_frame);
 
         quanta-=1;
     }
-
     return errorCode;
 }
