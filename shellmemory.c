@@ -1,10 +1,10 @@
 #include "pcb.h"
 #include "kernel.h"
 
-#include<stdlib.h>
-#include<string.h>
-#include<stdio.h>
-#include<stdbool.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdbool.h>
 
 /*
 
@@ -122,11 +122,17 @@ int resetmem(){
 
 
 int has_frame_space(){
+
 	for(int i=VAR_MEM_SIZE; i<SHELL_MEM_LENGTH; i+=3){
-		if (shellmemory[i].var=="none"){
+		// printf("\ni: %i , Var: %s\n", i, shellmemory[i].var);
+		if (strcmp(shellmemory[i].var, "none")==0){
+			// printf("\nI'm saying there is still framespace and the memory looks like:");
+			// print_shellmemory();
 			return 1; //Yes, has space
 		}
 	}
+	// printf("\nI'm saying there is NO framespace and the memory looks like:");
+	// print_shellmemory();
 	return 0; //No, has no space
 }
 
@@ -195,6 +201,8 @@ int load_page(PCB* myPCB, int page_num){
 	//Record in which frame the page is stored
 	myPCB->pagetable[page_num]=memindex_to_framenum(free_page_index);
 
+	// ("\nAfter page loading, PCB with pid %s has pagetable:\n", myPCB->pid);
+	// print_pagetable(myPCB);
 	//Test to print
 	// if(page_num==1){
 	// 	print_shellmemory();
@@ -209,8 +217,13 @@ int load_page(PCB* myPCB, int page_num){
 
 //Choose a page to take out of memory, update pagetable of the PCB to which the page belonged
 void clear_frame(){
+
+	// printf("\nShellmemory at the beginning of clear_frame\n");
+	// print_shellmemory();
+
 	//Choose frame to remove - for now randomly
 	int frame_to_remove = (rand() % (HIGHEST_FRAME_INDEX - 0 + 1)) + 0; 
+	frame_to_remove = 0; //Choose for now
 
 	//Record which program/PCB the victim frame was occupied by
 	char *victim_pid = shellmemory[framenum_to_memindex(frame_to_remove)].var;
@@ -229,10 +242,13 @@ void clear_frame(){
 	}
 	printf("\nEnd of victim page contents.\n");
 
-	print_shellmemory();
+	//print_shellmemory();
 
 	//Find which PCB had its page erased
 	PCB* kicked_PCB = get_PCB_from_pid(victim_pid);
+
+	// printf("\nThe kicked PCB has pid %s\n Pagetable before: \n", kicked_PCB->pid);
+	// print_pagetable(kicked_PCB);
 
 	//Update the pagetable of the kicked PCB
 	for (int i=0; i < 1000; i++){
@@ -240,5 +256,13 @@ void clear_frame(){
 			kicked_PCB->pagetable[i]=-1;
 		}
 	}
+
+	// printf("\nPagetable after:\n");
+	// print_pagetable(kicked_PCB);
+
+	// printf("\nShellmemory at the END of clear_frame\n");
+	// print_shellmemory();
+
+	has_frame_space();
 
 }
