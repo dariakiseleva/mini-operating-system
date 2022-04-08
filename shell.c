@@ -32,10 +32,10 @@ int main(int argc, char *argv[]) {
 	for (int i=0; i<MAX_USER_INPUT; i++)
 		userInput[i] = '\0';
 	
-	//init shell memory
+	//initialize
 	mem_init();
-
 	ready_queue_initialize();
+	lru_queue_init();
 
 	//initialize random number generator, for fileID and pid generation
 	srand(time(NULL));

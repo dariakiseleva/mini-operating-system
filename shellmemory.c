@@ -1,5 +1,6 @@
 #include "pcb.h"
 #include "kernel.h"
+#include "shellmemory.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -16,6 +17,7 @@ Frame Store Size = 21; Variable Store Size = 10
 
 #define SHELL_MEM_LENGTH (VAR_MEM_SIZE + FRAME_MEM_SIZE)
 #define HIGHEST_FRAME_INDEX ((FRAME_MEM_SIZE/3)-1)
+#define lru_length (FRAME_MEM_SIZE/3)
 
 struct memory_struct{
 	char *var;
@@ -23,6 +25,7 @@ struct memory_struct{
 };
 
 struct memory_struct shellmemory[SHELL_MEM_LENGTH];
+int lru_queue[lru_length];
 
 //Print before greeting
 
@@ -122,17 +125,11 @@ int resetmem(){
 
 
 int has_frame_space(){
-
 	for(int i=VAR_MEM_SIZE; i<SHELL_MEM_LENGTH; i+=3){
-		// printf("\ni: %i , Var: %s\n", i, shellmemory[i].var);
 		if (strcmp(shellmemory[i].var, "none")==0){
-			// printf("\nI'm saying there is still framespace and the memory looks like:");
-			// print_shellmemory();
 			return 1; //Yes, has space
 		}
 	}
-	// printf("\nI'm saying there is NO framespace and the memory looks like:");
-	// print_shellmemory();
 	return 0; //No, has no space
 }
 
@@ -163,21 +160,21 @@ int load_page(PCB* myPCB, int page_num){
 	}
 
 	//Find a free page in memory, store its first index
-	int free_page_index=-1;
+	int free_frame_index=-1;
 	for(int i=VAR_MEM_SIZE; i<SHELL_MEM_LENGTH; i+=3){ //Iterate by PAGES
 		if (shellmemory[i].var == "none"){ //If the first index is free, whole page is free
-			free_page_index=i;
+			free_frame_index=i;
 			break;
 		}
 	}
 
-	if (free_page_index==-1){
-		error_code = 22; ///<-------No memspace error
+	if (free_frame_index==-1){
+		error_code = 21; ///<-------No memspace error
 		return error_code;
 	}
 
 	int iterator = 0; //to iterate through file
-	int free_index=free_page_index; //index to use for lines
+	int free_index=free_frame_index; //index to use for lines
 	int loaded_something = 0;
 	
 	char buf[1000]; //To load the line
@@ -199,15 +196,12 @@ int load_page(PCB* myPCB, int page_num){
 	}
 
 	//Record in which frame the page is stored
-	myPCB->pagetable[page_num]=memindex_to_framenum(free_page_index);
+	int free_frame_num = memindex_to_framenum(free_frame_index);
+	myPCB->pagetable[page_num]=free_frame_num;
 
-	// ("\nAfter page loading, PCB with pid %s has pagetable:\n", myPCB->pid);
-	// print_pagetable(myPCB);
-	//Test to print
-	// if(page_num==1){
-	// 	print_shellmemory();
-	// 	print_pagetable(myPCB);
-	// }
+	//Page was used, so move it back in the LRU queue
+	lru_queue_add_to_end(free_frame_num);
+	//print_lru_queue();
 
 	//END
 	fclose(fp);
@@ -218,18 +212,15 @@ int load_page(PCB* myPCB, int page_num){
 //Choose a page to take out of memory, update pagetable of the PCB to which the page belonged
 void clear_frame(){
 
-	// printf("\nShellmemory at the beginning of clear_frame\n");
-	// print_shellmemory();
-
 	//Choose frame to remove - for now randomly
 	int frame_to_remove = (rand() % (HIGHEST_FRAME_INDEX - 0 + 1)) + 0; 
-	frame_to_remove = 0; //Choose for now
+	frame_to_remove = lru_queue_pop(); //TRY POPPING!
 
 	//Record which program/PCB the victim frame was occupied by
 	char *victim_pid = shellmemory[framenum_to_memindex(frame_to_remove)].var;
 
 
-	printf("\nPage fault! Victim page contents:\n");
+	printf("Page fault! Victim page contents:\n");
 	//Iterate through up to 3 lines of the frame, print them out and clear them
 	int line_num = 0;
 	while(line_num < 3){
@@ -240,15 +231,13 @@ void clear_frame(){
 		}
 		line_num ++;
 	}
-	printf("\nEnd of victim page contents.\n");
+	printf("End of victim page contents.\n");
 
 	//print_shellmemory();
 
 	//Find which PCB had its page erased
 	PCB* kicked_PCB = get_PCB_from_pid(victim_pid);
 
-	// printf("\nThe kicked PCB has pid %s\n Pagetable before: \n", kicked_PCB->pid);
-	// print_pagetable(kicked_PCB);
 
 	//Update the pagetable of the kicked PCB
 	for (int i=0; i < 1000; i++){
@@ -257,12 +246,64 @@ void clear_frame(){
 		}
 	}
 
-	// printf("\nPagetable after:\n");
-	// print_pagetable(kicked_PCB);
-
-	// printf("\nShellmemory at the END of clear_frame\n");
-	// print_shellmemory();
-
-	has_frame_space();
+	//frame was used, so move it back in the LRU queue
+  lru_queue_add_to_end(frame_to_remove);
 
 }
+
+//-----------LRU QUEUE
+
+//Initialize LRU queue
+void lru_queue_init(){
+    for (int i = 0; i < lru_length; i++)
+    {
+        lru_queue[i] = -1;
+    }
+}
+
+//Helper function!
+void print_lru_queue(){
+  for (int i=0; i<lru_length; i++){
+     printf("lru[%i]: %i\n", i, lru_queue[i]);
+  }
+}
+
+//Just add to end, or if already in queue -move to end
+void lru_queue_add_to_end(int new){
+
+  int existing_index = -1;
+  //find if it is in queue
+  for (int i=0; i<lru_length; i++){
+    if (lru_queue[i]==new){
+      existing_index=i;
+    }
+  }
+  //If it is in queue, shift the rest
+  if(existing_index!=-1){
+    for (int i=existing_index; i<lru_length-1; i++){
+      lru_queue[i]=lru_queue[i+1];
+    }
+    lru_queue[lru_length-1]=-1;
+  }
+
+  //add to the end
+  for (int i=0; i<lru_length; i++){
+    if (lru_queue[i]==-1){
+      lru_queue[i]=new;
+      break;
+    }
+  }  
+
+}
+
+//Remove first element from queue, return it
+int lru_queue_pop(){
+  int first = lru_queue[0];
+  for (int i=0; i<lru_length-1; i++){
+    lru_queue[i]=lru_queue[i+1];
+  }
+  lru_queue[lru_length-1]=-1;
+  return first;
+}
+
+

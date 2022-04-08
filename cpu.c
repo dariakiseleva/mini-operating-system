@@ -63,7 +63,8 @@ int cpu_run_virtual(PCB *myPCB){
         }
 
         //Figure out where in memory to look for the command
-        int index_in_memory = framenum_to_memindex(myPCB->pagetable[myPCB->page_counter]) + myPCB->line_in_page;
+        int source_frame = myPCB->pagetable[myPCB->page_counter];
+        int index_in_memory = framenum_to_memindex(source_frame) + myPCB->line_in_page;
 
         //Get the command from memory
         char command[1000];
@@ -83,6 +84,10 @@ int cpu_run_virtual(PCB *myPCB){
             myPCB->page_counter++;
             myPCB->line_in_page = 0;
         }
+
+        //frame was used, so move it back in the LRU queue
+        lru_queue_add_to_end(source_frame);
+
         quanta-=1;
     }
 

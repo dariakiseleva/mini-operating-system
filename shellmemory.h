@@ -16,3 +16,8 @@ void mem_set_value(char *var, char *value);
 void clean_mem(int start, int end);
 int resetmem();
 int add_file_to_mem(FILE* fp, int* pStart, int* pEnd, char* fileID);
+
+void lru_queue_init();
+void print_lru_queue();
+void lru_queue_add_to_end(int new);
+int lru_queue_pop();

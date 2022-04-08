@@ -106,18 +106,15 @@ int myinit(const char*filename){
     //Create PCB
     PCB* newPCB = makePCB(fileID, bs_filename);
 
-    //Load up to two pages
-
+    //Load up to two initial pages
     for (int page_num=0; page_num<=file_has_page(newPCB, 1); page_num++){
-        error_code = load_page(newPCB, page_num); //---> Send to load page
+        error_code = load_page(newPCB, page_num);
         if(error_code != 0){
             return error_code;
         }
     }
 
-    printf("\nPCB - pid: %s, bs_filename: %s\n", newPCB->pid, newPCB->bs_filename); ///<-----------
-
-    //FIX THIS LATER
+    //PCB to ready queue
     ready_queue_add_to_end(newPCB);
 
     return error_code;
