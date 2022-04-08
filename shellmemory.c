@@ -11,50 +11,25 @@
 #include <unistd.h>
 
 /*
-
-Frame Store Size = 21; Variable Store Size = 10
-
-[---Variables---][----Frames (multiple of 3)----]
-
+Memory is a single array with the structure:
+[---Variables (var_mem_size)---][----Frames (frame_mem_size, which is a multiple of 3)----]
 */
 
+//Key constants
 #define SHELL_MEM_LENGTH (VAR_MEM_SIZE + FRAME_MEM_SIZE)
 #define HIGHEST_FRAME_INDEX ((FRAME_MEM_SIZE/3)-1)
 #define lru_length (FRAME_MEM_SIZE/3)
 
+//Key objects
 struct memory_struct{
 	char *var;
 	char *value;
 };
-
 struct memory_struct shellmemory[SHELL_MEM_LENGTH];
 int lru_queue[lru_length];
 
-//Print before greeting
 
-//HELPER FUNCTION TO DELETE LATER
-void print_shellmemory(){
-	printf("\n");
-	for (int i=VAR_MEM_SIZE; i<SHELL_MEM_LENGTH; i++){
-			if (shellmemory[i].var!="none"){
-			printf("Index: %i, Var: %s, value: %s", i, shellmemory[i].var, shellmemory[i].value);
-		}
-	}
-}
-
-void print_pagetable(PCB* myPCB){
-
-	printf("\n\nPagetable of PID %s\n\n", myPCB->pid);
-	for (int i=0; i<1000; i++){
-		if (myPCB->pagetable[i]!=-1){
-			printf("pagetable[%i]=%i\n", i, myPCB->pagetable[i]);
-		}
-	}
-}
-
-
-///-------------
-
+///----------BASIC MEMORY FUNCTIONS
 
 // Shell memory functions
 
@@ -105,20 +80,12 @@ char *mem_get_value(char *var_in) {
 
 }
 
+//get value by line in shell memory
 char* mem_get_value_by_line(int line){
 	return shellmemory[line].value;
 }
 
-
-void clean_mem(int start, int end){
-    for(int i = start; i <= end; i ++){
-      shellmemory[i].var = "none";
-			shellmemory[i].value = "none";
-    }
-}
-
-
-//Delete contents of variable store
+//New command: Delete contents of variable store only
 int resetmem(){
 	  for(int i = 0; i < VAR_MEM_SIZE; i ++){
       shellmemory[i].var = "none";
@@ -127,6 +94,9 @@ int resetmem(){
 }
 
 
+//-----------FUNCTIONS FOR DEMAND PAGING
+
+//See if variable store has space for one more frame, return 1 if yes and 0 if no
 int has_frame_space(){
 	for(int i=VAR_MEM_SIZE; i<SHELL_MEM_LENGTH; i+=3){
 		if (strcmp(shellmemory[i].var, "none")==0){
@@ -136,7 +106,7 @@ int has_frame_space(){
 	return 0; //No, has no space
 }
 
-//Helper functions for conversions
+//Helper functions for conversions between # of frame (starting at 0) and the index in the shellmemory array
 int framenum_to_memindex(int framenum){
 	int memindex = VAR_MEM_SIZE + (framenum * 3);
 	return memindex;
@@ -147,22 +117,23 @@ int memindex_to_framenum(int memindex){
 	return framenum;
 }
 
-//Load a page into memory
+//Load a page into memory: takes the PCB and which page of that file should be loaded (pages start at 0)
 int load_page(PCB* myPCB, int page_num){
 
 	int error_code = 0;
 	int file_startline = page_num*3;
 
+	//Open the corresponding file in the backing store
 	FILE* fp;
-	fp = fopen(myPCB->bs_filename, "rt"); //Take new file, not original
+	fp = fopen(myPCB->bs_filename, "rt");
 
-	//Make sure file exists
+	//Make sure file exists, otherwise return appropriate error
 	if(fp == NULL){
-		error_code = 11; // 11 is the error code for file does not exist
+		error_code = 11; 
 		return error_code;
 	}
 
-	//Find a free page in memory, store its first index
+	//Find a free frame in memory, store its first index
 	int free_frame_index=-1;
 	for(int i=VAR_MEM_SIZE; i<SHELL_MEM_LENGTH; i+=3){ //Iterate by PAGES
 		if (shellmemory[i].var == "none"){ //If the first index is free, whole page is free
@@ -171,19 +142,19 @@ int load_page(PCB* myPCB, int page_num){
 		}
 	}
 
+	//If no free frame in memory, return appropriate error
 	if (free_frame_index==-1){
-		error_code = 21; ///<-------No memspace error
+		error_code = 21; 
 		return error_code;
 	}
 
 	int iterator = 0; //to iterate through file
 	int free_index=free_frame_index; //index to use for lines
-	int loaded_something = 0;
 	
-	char buf[1000]; //To load the line
+	//Load up to three lines from file, starting at index found above, into shellmemory
+	char buf[1000];
   while (fgets(buf,1000, fp)!=NULL) {
     if (iterator == file_startline || iterator == (file_startline+1) || iterator == (file_startline+2)){
-			loaded_something = 1;
 			shellmemory[free_index].var = strdup(myPCB->pid);
       shellmemory[free_index].value = strdup(buf);
 			free_index++;
@@ -191,40 +162,31 @@ int load_page(PCB* myPCB, int page_num){
   	iterator++;
   }
 
-	//If nothing was loaded, the file has finished
-	//Return specific error
-	if (loaded_something==0){
-		printf("\nNothing to load, %s does not have page #%i\n", myPCB->pid, page_num);
-		exit(1);
-	}
-
-	//Record in which frame the page is stored
+	//Record in which frame the page is stored in the pagetable of the PCB
 	int free_frame_num = memindex_to_framenum(free_frame_index);
 	myPCB->pagetable[page_num]=free_frame_num;
 
-	//Page was used, so move it back in the LRU queue
+	//Page was used, so move it to the back of the LRU queue
 	lru_queue_add_to_end(free_frame_num);
-	//print_lru_queue();
 
-	//END
+	//Close file and return 0 if successful
 	fclose(fp);
 	return error_code;
 }
 
-
-//Choose a page to take out of memory, update pagetable of the PCB to which the page belonged
+//Empty one frame in memory, update pagetable of the PCB to which the page belonged
 void clear_frame(){
 
-	//Choose frame to remove - for now randomly
-	int frame_to_remove = (rand() % (HIGHEST_FRAME_INDEX - 0 + 1)) + 0; 
-	frame_to_remove = lru_queue_pop(); //TRY POPPING!
+	//The frame that must be cleared is the least recently used one - index 0 in the LRU queue
+	//It is an integer 0 or above
+	int frame_to_remove = lru_queue_pop(); 
 
-	//Record which program/PCB the victim frame was occupied by
+	//Search shellmemory to find the pid of the PCB which had the code in the frame to be emptied
 	char *victim_pid = shellmemory[framenum_to_memindex(frame_to_remove)].var;
 
-
+	//Print to screen the content kicked out of shellmemory
+	//Immediately after, set the shellmemory slots to empty values
 	printf("Page fault! Victim page contents:\n");
-	//Iterate through up to 3 lines of the frame, print them out and clear them
 	int line_num = 0;
 	while(line_num < 3){
 		if (strcmp(shellmemory[framenum_to_memindex(frame_to_remove)+line_num].var, "none")!=0){
@@ -234,25 +196,29 @@ void clear_frame(){
 		}
 		line_num ++;
 	}
-	printf("End of victim page content.\n");
+	printf("End of victim page contents.\n");
 
-	//Find which PCB had its page erased
+	//Use the pid to find which PCB had its code taken out of memory
 	PCB* kicked_PCB = get_PCB_from_pid(victim_pid);
 
-
-	//Update the pagetable of the kicked PCB
+	//Update the pagetable of the kicked PCB to indicate that one of its pages is no longer in memory
 	for (int i=0; i < 1000; i++){
 		if(kicked_PCB->pagetable[i]==frame_to_remove){
 			kicked_PCB->pagetable[i]=-1;
 		}
 	}
 
-	//frame was used, so move it back in the LRU queue
+	//frame was used, so move it to the back of the LRU queue
   lru_queue_add_to_end(frame_to_remove);
 
 }
 
-//-----------LRU QUEUE
+
+//-----------LRU QUEUE FUNCTIONS
+
+/* The LRU queue is an array of ints which are the frame #s starting at 0. The frame in index 0 of the LRU queue is the one that was least recently used etc.
+*/
+
 
 //Initialize LRU queue
 void lru_queue_init(){
@@ -262,14 +228,8 @@ void lru_queue_init(){
     }
 }
 
-//Helper function!
-void print_lru_queue(){
-  for (int i=0; i<lru_length; i++){
-     printf("lru[%i]: %i\n", i, lru_queue[i]);
-  }
-}
 
-//Just add to end, or if already in queue -move to end
+//Add OR move a frame number to the back of the queue
 void lru_queue_add_to_end(int new){
 
   int existing_index = -1;
@@ -294,11 +254,9 @@ void lru_queue_add_to_end(int new){
       break;
     }
   } 
-
-	//print_lru_queue();
 }
 
-//Remove first element from queue, return it
+//Remove first element from queue and return it
 int lru_queue_pop(){
   int first = lru_queue[0];
   for (int i=0; i<lru_length-1; i++){
@@ -309,21 +267,23 @@ int lru_queue_pop(){
 }
 
 
-//---------BACKING STORE
+//---------BACKING STORE FUNCTIONS
 
+//Ensure that an empty folder "backing_store" exists in the current directory
 void reset_backing_store(){
   struct stat st = {0};
-  //If Directory doesn't exist, we create it
+  //If Directory doesn't exist, create it
   if (stat("./backing_store", &st) == -1) {
       system("mkdir backing_store");
   } 
-  //If it exists, we delete it first and then call create again
+  //If directory exists, delete it first and then call create again
   else {
     delete_backing_store();
     reset_backing_store();
   }
 }
 
+//Delete the "backing_store" folder
 void delete_backing_store(){
   system("rm -rf  backing_store");
 }
