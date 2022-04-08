@@ -9,22 +9,22 @@
 #include <unistd.h>
 
 
-void reset_backing_store(){
-  struct stat st = {0};
-  //If Directory doesn't exist, we create it
-  if (stat("./backing_store", &st) == -1) {
-      system("mkdir backing_store");
-  } 
-  //If it exists, we delete it first and then call create again
-  else {
-    delete_backing_store();
-    reset_backing_store();
-  }
-}
+// void reset_backing_store(){
+//   struct stat st = {0};
+//   //If Directory doesn't exist, we create it
+//   if (stat("./backing_store", &st) == -1) {
+//       system("mkdir backing_store");
+//   } 
+//   //If it exists, we delete it first and then call create again
+//   else {
+//     delete_backing_store();
+//     reset_backing_store();
+//   }
+// }
 
-void delete_backing_store(){
-  system("rm -rf  backing_store");
-}
+// void delete_backing_store(){
+//   system("rm -rf  backing_store");
+// }
 
 
 // //CODE FOR TEXTING

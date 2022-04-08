@@ -7,7 +7,14 @@ clean:
 
 
 #alias r="make clean ; make mysh framesize=18 varmemsize=10 ; ./mysh"
+#alias r="make clean ; make mysh framesize=21 varmemsize=10 ; ./mysh"
+#alias r="make clean ; make mysh framesize=6 varmemsize=10 ; ./mysh"
+
+
 #exec prog7 prog8 prog9 RR
 
 #exec prog1 prog2 prog3 RR
 #exec prog4 prog5 prog6 RR
+
+# alias ready="make clean ; make mysh framesize=18 varmemsize=10"
+# alias go="./mysh < tc4"

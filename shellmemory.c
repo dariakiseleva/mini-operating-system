@@ -2,10 +2,13 @@
 #include "kernel.h"
 #include "shellmemory.h"
 
-#include <stdlib.h>
-#include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h> 
 #include <stdbool.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 /*
 
@@ -231,9 +234,7 @@ void clear_frame(){
 		}
 		line_num ++;
 	}
-	printf("End of victim page contents.\n");
-
-	//print_shellmemory();
+	printf("End of victim page content.\n");
 
 	//Find which PCB had its page erased
 	PCB* kicked_PCB = get_PCB_from_pid(victim_pid);
@@ -292,8 +293,9 @@ void lru_queue_add_to_end(int new){
       lru_queue[i]=new;
       break;
     }
-  }  
+  } 
 
+	//print_lru_queue();
 }
 
 //Remove first element from queue, return it
@@ -307,3 +309,21 @@ int lru_queue_pop(){
 }
 
 
+//---------BACKING STORE
+
+void reset_backing_store(){
+  struct stat st = {0};
+  //If Directory doesn't exist, we create it
+  if (stat("./backing_store", &st) == -1) {
+      system("mkdir backing_store");
+  } 
+  //If it exists, we delete it first and then call create again
+  else {
+    delete_backing_store();
+    reset_backing_store();
+  }
+}
+
+void delete_backing_store(){
+  system("rm -rf  backing_store");
+}

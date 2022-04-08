@@ -75,6 +75,9 @@ int lru_queue_pop(){
   return first;
 }
 
+
+
+
 int main(int argc, char *argv[]) {
   lru_queue_init();
   lru_queue_add_to_end(0);

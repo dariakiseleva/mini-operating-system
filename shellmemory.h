@@ -21,3 +21,7 @@ void lru_queue_init();
 void print_lru_queue();
 void lru_queue_add_to_end(int new);
 int lru_queue_pop();
+
+
+void reset_backing_store();
+void delete_backing_store();

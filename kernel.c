@@ -141,7 +141,9 @@ int get_scheduling_policy_number(char* policy){
 
 PCB* get_PCB_from_pid(char* victim_pid){
     //printf("\nI received the victim PID: %s\n", victim_pid);
-    PCB *kicked_PCB;
+    PCB * kicked_PCB = malloc(sizeof(PCB));
+
+    //PCB *kicked_PCB;
     for (int i = 0; i < QUEUE_LENGTH; i++){
         if ((*readyQueue[i]).pid!=NULL && strcmp((*readyQueue[i]).pid, victim_pid)==0){
             kicked_PCB = readyQueue[i];
@@ -173,30 +175,17 @@ int scheduler(int policyNumber){
         //If PAGE FAULT
         if(cpu_error == 2){
 
-            // print_ready_queue();
-
-            //print_shellmemory();
-
             if(has_frame_space()==0){
-                // printf("\nTHERE IS NO FRAME SPACE, SENDING TO CLEAR FRAME\n");
                 clear_frame();
-                // printf("\nExiting after clearing frame\n");
-                // exit(1);
             }
 
             //In any case, load an extra page of the file into an empty spot
             //Update original pagetable
-
             int load_error = load_page(&firstPCB, firstPCB.page_counter);
-            // printf("After loading page, back in scheduler the pagetable is:");
-            // print_pagetable(&firstPCB);
 
             //Put PCB in back of queue
             ready_queue_pop(0,true); 
             ready_queue_add_to_end(&firstPCB);
-         
-
-            //We need to know what to look for in the pagetable of the victim. We could have this in another function in this document that clear_frame calls, instead of returning to scheduler.
         }
 
         if(cpu_error == 0){
