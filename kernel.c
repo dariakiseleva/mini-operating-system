@@ -106,11 +106,11 @@ int myinit(const char*filename){
     //Create PCB
     PCB* newPCB = makePCB(fileID, bs_filename);
 
-    //Load two pages, return error if something is wrong? For now?
-    for (int page_num=0; page_num<=1; page_num++){
+    //Load up to two pages
+
+    for (int page_num=0; page_num<=file_has_page(newPCB, 1); page_num++){
         error_code = load_page(newPCB, page_num); //---> Send to load page
         if(error_code != 0){
-            //fclose(fp);
             return error_code;
         }
     }
