@@ -126,6 +126,7 @@ int myinit(const char *filename){
         error_code = 11; // 11 is the error code for file does not exist
         return error_code;
     }
+    fclose(fp);
 
     //generate a random ID as file ID
     char* fileID = (char*)malloc(32);
@@ -140,8 +141,6 @@ int myinit(const char *filename){
     newPCB -> job_length_score = 1 + *end - *start;
 
     ready_queue_add_to_end(newPCB);
-
-    fclose(fp);
 
     return error_code;
 }

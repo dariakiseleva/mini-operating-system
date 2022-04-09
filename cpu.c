@@ -17,7 +17,7 @@
 int file_has_page(PCB *myPCB, int page_num){
 
     FILE* fp;
-        fp = fopen(myPCB->bs_filename, "rt"); 
+    fp = fopen(myPCB->bs_filename, "rt"); 
 
     int lines = 0;
     char buf[1000]; //To load the line
@@ -26,10 +26,10 @@ int file_has_page(PCB *myPCB, int page_num){
             lines++;
         }
     }
+    fclose(fp);
 
     int last_page = (lines-1)/3;
 
-    // printf("\nLines: %i, Last page: %i\n", lines, last_page);
     if (last_page>=page_num){
         return 1;
     } 

@@ -123,16 +123,6 @@ int load_page(PCB* myPCB, int page_num){
 	int error_code = 0;
 	int file_startline = page_num*3;
 
-	//Open the corresponding file in the backing store
-	FILE* fp;
-	fp = fopen(myPCB->bs_filename, "rt");
-
-	//Make sure file exists, otherwise return appropriate error
-	if(fp == NULL){
-		error_code = 11; 
-		return error_code;
-	}
-
 	//Find a free frame in memory, store its first index
 	int free_frame_index=-1;
 	for(int i=VAR_MEM_SIZE; i<SHELL_MEM_LENGTH; i+=3){ //Iterate by PAGES
@@ -145,6 +135,16 @@ int load_page(PCB* myPCB, int page_num){
 	//If no free frame in memory, return appropriate error
 	if (free_frame_index==-1){
 		error_code = 21; 
+		return error_code;
+	}
+
+	//Open the corresponding file in the backing store
+	FILE* fp;
+	fp = fopen(myPCB->bs_filename, "rt");
+
+	//Make sure file exists, otherwise return appropriate error
+	if(fp == NULL){
+		error_code = 11; 
 		return error_code;
 	}
 
@@ -161,6 +161,8 @@ int load_page(PCB* myPCB, int page_num){
     }
   	iterator++;
   }
+	//Close file
+	fclose(fp);
 
 	//Record in which frame the page is stored in the pagetable of the PCB
 	int free_frame_num = memindex_to_framenum(free_frame_index);
@@ -169,8 +171,7 @@ int load_page(PCB* myPCB, int page_num){
 	//Page was used, so move it to the back of the LRU queue
 	lru_queue_add_to_end(free_frame_num);
 
-	//Close file and return 0 if successful
-	fclose(fp);
+	//Return 0 if successful
 	return error_code;
 }
 
