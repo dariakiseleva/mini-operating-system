@@ -1,2 +1,0 @@
-exec file1 file2 file1 FCFS
-exec file2 file2 FCFS

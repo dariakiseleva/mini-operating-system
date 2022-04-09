@@ -1,2 +1,9 @@
 /A2Solution
 .DS_Store 
+.vscode
+shell.o
+shellmemory.o
+kernel.o
+cpu.o
+pcb.o
+interpreter.o
