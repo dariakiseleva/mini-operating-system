@@ -7,3 +7,4 @@ kernel.o
 cpu.o
 pcb.o
 interpreter.o
+mysh
