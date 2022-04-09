@@ -1,48 +1,29 @@
-# Shortcuts
+# Execution
 
-`make mysh`
+`make clean`
 
-`alias run="make clean ; make mysh"`
+`make make mysh framesize=X varmemsize=Y`
 
-`./mysh` (interactive mode)
+Where X is the space for frames in memory and must be a multiple of 3, and Y is the space for variable value storage.
 
-`./mysh < testfile.txt` (batch mode)
+`./mysh < testfile.txt`
 
-*In A2 and with paging in A3*
+Where `testfile.txt` is e.g.
+> exec prog10 prog11 prog12 RR
 
-`run SCRIPT`
+And program files are, e.g. `prog10` are:
+> echo P10L1
+set a PTenLineTwoSet; print a
+echo P10L3
+echo $a
+echo P10L5
+set a PTenLineSixSet; echo $a
+echo P10L7
 
-`exec prog1 prog2 prog3 POLICY`
+*Note: all files must be in the same directory from which the program is run*
 
-`resetmem`
+# Testing
+Folder [A3_testcases_public](./A3_testcases_public/) contains test files and expected results.
 
-*With Demand Paging in A3*
-
-`make mysh framesize=300 varmemsize=100`
-
-
-# To-do
-
-## Learning
-
-*Key*
-- [x] A3 intro video
-
-*Labs*
-
-- [ ] Lab 1 - review and finish it
-- [ ] Lab 2 - pointers and memory
-- [ ] Lab 4 - Complex structs
-- [ ] Lab 6 - pointers and memory II
-
-*Live sessions (maybe)*
-
-- [ ] Lecture 7
-- [ ] LEcture 8
-
-## The Work
-
-- [x] Complete paging without demand - pass test1 and test2
-
-## Maybe back to...? 
-- [ ] Last part of `add_file_to_mem` in A2 where they clean the memory. bugs in for loop? Or not? I don't understand it.
+# Limitations
+* 
