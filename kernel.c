@@ -11,20 +11,14 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-//Key variable to keep track of filenames, this must be reset!
+//Key variable to keep track of filenames in backing_store, it must be reset after 'run' or 'exec' is over
 int file_num = 1; ///NOTE: This must be reset!
 
 #define QUEUE_LENGTH 10
 #define MAX_INT 2147483646
 PCB* readyQueue[QUEUE_LENGTH];
 
-//Helper function to delete
-void print_ready_queue(){
-    for (int i = 0; i < QUEUE_LENGTH; i++){
-        printf("%i: %s", i, readyQueue[i]->pid);
-    }
-    printf("\n");
-}
+//----REEADY QUEUE FUNCTIONS
 
 void ready_queue_initialize()
 {
@@ -73,16 +67,43 @@ void ready_queue_add_to_end(PCB *pPCB)
     }
 }
 
-void ready_queue_add_to_front(PCB *pPCB){
-    for (size_t i = QUEUE_LENGTH-1; i > 0; i--){
-        (*readyQueue[i])=(*readyQueue[i-1]);
+//-------HELPER FUNCTIONS
+
+//--Given a pid, find which PCB in the ready queue it refers to (called by clear_frame())
+PCB* get_PCB_from_pid(char* victim_pid){
+
+    PCB * kicked_PCB = malloc(sizeof(PCB));
+
+    for (int i = 0; i < QUEUE_LENGTH; i++){
+        if ((*readyQueue[i]).pid!=NULL && strcmp((*readyQueue[i]).pid, victim_pid)==0){
+            kicked_PCB = readyQueue[i];
+        }
     }
-    (*readyQueue[0])=(*pPCB);
+    return kicked_PCB;
 }
 
 
-///-------------------NEW MYINIT
+//--Transforms valid policy to policy number as an int, initiates error if invalid
+//--Not really used in Assignment 3
+int get_scheduling_policy_number(char* policy){
+    if(strcmp("FCFS",policy)==0){
+        return 0;
+    }else if(strcmp("SJF",policy)==0){
+        return 1;
+    }else if(strcmp("RR",policy)==0){
+        return 2;
+    }else if(strcmp("AGING",policy)==0){
+        return 3;
+    }else{
+        //error code 15
+        return 15;
+    }
+}
 
+
+//-------KEY FUNCTIONS
+
+//---Initialize the file into the backing store, and create a PCB for the ready queue
 int myinit(const char*filename){
 
     int error_code = 0;
@@ -121,82 +142,51 @@ int myinit(const char*filename){
 
 }
 
-
-
-int get_scheduling_policy_number(char* policy){
-    if(strcmp("FCFS",policy)==0){
-        return 0;
-    }else if(strcmp("SJF",policy)==0){
-        return 1;
-    }else if(strcmp("RR",policy)==0){
-        return 2;
-    }else if(strcmp("AGING",policy)==0){
-        return 3;
-    }else{
-        //error code 15
-        return 15;
-    }
-}
-
-
-PCB* get_PCB_from_pid(char* victim_pid){
-    //printf("\nI received the victim PID: %s\n", victim_pid);
-    PCB * kicked_PCB = malloc(sizeof(PCB));
-
-    //PCB *kicked_PCB;
-    for (int i = 0; i < QUEUE_LENGTH; i++){
-        if ((*readyQueue[i]).pid!=NULL && strcmp((*readyQueue[i]).pid, victim_pid)==0){
-            kicked_PCB = readyQueue[i];
-            //printf("The victim pid is: %s\n", (*readyQueue[i]).pid);
-        }
-    //printf("\nThe pid is: %s\n", (*readyQueue[i]).pid);
-    }
-    return kicked_PCB;
-}
-
-
-
-// Only left part of scheduler that deals with RR policy
+// Coordinates the the ready queue and sending PCBs to the CPU to execute. 
+//NOTE: For Assignment 3, ignore policy number and simply run Round Robin
 int scheduler(int policyNumber){
     int error_code = 0;
 
-    //keep running programs while ready queue is not empty
+    //While something is still in the ready queue, meaning not all lines in the file(s) sent to be run have been executed
     while(ready_queue_pop(0,false).pid != NULL)
     {
         //Get the first PCB in the queue and send it to the CPU
         PCB firstPCB = ready_queue_pop(0,false);
         int cpu_error = cpu_run_virtual(&firstPCB);
 
-        //If PCB is done, take it off the queue
+        //If all code of the PCB has been executed, take it off the queue
         if(cpu_error == 1){
             ready_queue_pop(0,true); //Pop the head of the queue with removal
         }
 
-        //If PAGE FAULT
+        //If PAGE FAULT - the next page of code of the PCB is not in shell memory
         if(cpu_error == 2){
 
+            //If all frame space is full, empty the LRU frame
+            //This is only NOT the case if the initial two pages of each file that were loaded into shellmemory did not take up the entire framespace, and some files have a third frame or more
+            //The pagetable of the PCB whose code was kicked out will be updated
             if(has_frame_space()==0){
                 clear_frame();
             }
 
-            //In any case, load an extra page of the file into an empty spot
-            //Update original pagetable
+            //Once there is for sure an empty frame, load an extra page of the file into shell memory
+            //The pagetable of the PCB will be updated
             int load_error = load_page(&firstPCB, firstPCB.page_counter);
 
             //Put PCB in back of queue
+            //Note: this is noly done in the end because the pagetable of the PCB is updated above
             ready_queue_pop(0,true); 
             ready_queue_add_to_end(&firstPCB);
         }
 
+        //the head PCB program has finished its quanta, it need to be put to the end of ready queue
         if(cpu_error == 0){
-            //the head PCB program has finished its quanta, it need to be put to the end of ready queue
             ready_queue_pop(0,true);
             ready_queue_add_to_end(&firstPCB);
         }
     }
 
-    //clean up
+    //clean up and return
     ready_queue_Empty();
-
     return error_code;
 }
