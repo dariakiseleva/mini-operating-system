@@ -1,34 +1,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h> 
-
+#include "interpreter.h"
 #include "shellmemory.h"
 #include "shell.h"
 #include "kernel.h"
 
 int MAX_ARGS_SIZE = 7;
 
-int help();
-int quit();
-// resetmem() is in shellmemory.c
-int badcommand();
-int badcommandTooManyTokens();
-int bad_command_file_does_not_exist();
-int badcommand_scheduling_policy_error();
-int badcommand_no_mem_space();
-int badcommand_ready_queue_full();
-int badcommand_same_file_name();
-int handleError(int error_code);
-int set(char* var, char* value);
-int print(char* var);
-int run(char* script);
-int exec(char *fname1, char *fname2, char *fname3, char* policy);
-int my_ls();
-int echo();
-
 int interpreter(char* command_args[], int args_size){
 	int i;
 
+	//Error if invalid size
 	if ( args_size < 1 || args_size > MAX_ARGS_SIZE){
 		if (strcmp(command_args[0], "set")==0 && args_size > MAX_ARGS_SIZE) {
 			return badcommandTooManyTokens();
@@ -40,6 +23,7 @@ int interpreter(char* command_args[], int args_size){
 		command_args[i][strcspn(command_args[i], "\r\n")] = 0;
 	}
 
+	//Send valid commmands to relevant functions
 	if (strcmp(command_args[0], "help")==0){
 	    //help
 	    if (args_size != 1) return badcommand();
@@ -196,7 +180,7 @@ int run(char* script){
 
 	//Empty the backing store and start count files from 1 again
 	reset_backing_store();
-	file_num = 1; //Global variable in kernel.c
+	file_num = 1; 
 
 	return errCode;
 }
@@ -205,13 +189,15 @@ int exec(char *fname1, char *fname2, char *fname3, char* policy){
 
   int error_code = 0;
 
+	//Validate policy number
 	int policyNumber = get_scheduling_policy_number(policy);
 	if(policyNumber == 15){
 		return handleError(policyNumber);
 	}
 
+	//Send up to 3 files to be initialized
 	if(fname1 != NULL){
-			error_code = myinit(fname1);
+		error_code = myinit(fname1);
 		if(error_code != 0){
 			return handleError(error_code);
 		}
@@ -229,12 +215,12 @@ int exec(char *fname1, char *fname2, char *fname3, char* policy){
 		}
 	}
     
+	//Run scheduler according to policy number
 	scheduler(policyNumber);
 
 	//Empty the backing store and start count files from 1 again
 	reset_backing_store();
-	file_num = 1; //Global variable in kernel.c
-
+	file_num = 1; 
 
 	return error_code;
 }
